@@ -1,0 +1,12 @@
+{
+  "game_title": "Potato Game",
+  "start_game": "Start Game",
+  "instructions": "Connect the numbers in order without crossing lines or touching other numbers. If you make a mistake, you are disqualified.",
+  "select_language": "Select language",
+  "select_players": "Number of players",
+  "select_range": "Number range",
+  "player_turn": "{{player}}'s turn",
+  "disqualified": "Disqualified!",
+  "winner": "Winner!",
+  "restart": "Restart"
+}
