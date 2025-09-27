@@ -88,6 +88,7 @@ function renderGame() {
   gameState.positions = positions;
   drawNumbers(svg, positions, radius);
   setupDragInteraction(svg, positions, radius);
+  renderPlayersList();
 }
 
 function updateTurnInfo() {
@@ -146,7 +147,7 @@ function setupDragInteraction(svg, positions, radius) {
         gameState.nextNumber++;
         if (gameState.nextNumber === positions.length) {
           // Ganador
-          document.getElementById("turn-info").textContent = i18n.winner;
+          showEndScreen(gameState.players[gameState.currentTurn].id);
         } else {
           nextTurn();
         }
@@ -256,9 +257,28 @@ function disqualifyCurrentPlayer() {
   setTimeout(() => {
     // Si solo queda uno activo, es el ganador
     if (gameState.players.filter(p => p.active).length === 1) {
-      document.getElementById("turn-info").textContent = i18n.winner;
+      showEndScreen(gameState.players.find(p => p.active).id);
     } else {
       nextTurn();
     }
   }, 1200);
+}
+
+function renderPlayersList() {
+  let html = '<div id="players-list" style="margin:8px 0 12px 0;">';
+  gameState.players.forEach((p, i) => {
+    html += `<span class="player-badge${p.active ? (i === gameState.currentTurn ? ' active' : '') : ' disqualified'}">${i18n.player_turn.replace("{{player}}", p.id)}</span> `;
+  });
+  html += '</div>';
+  document.getElementById("game-header").insertAdjacentHTML('beforeend', html);
+}
+
+function showEndScreen(winnerId) {
+  const disq = gameState.players.filter(p => !p.active).map(p => i18n.player_turn.replace("{{player}}", p.id));
+  let html = `<div class="end-screen" style="margin-top:24px;text-align:center;">
+    <h2>${i18n.winner} ${i18n.player_turn.replace("{{player}}", winnerId)}</h2>
+    <p>${disq.length ? 'Descalificados: ' + disq.join(', ') : ''}</p>
+    <button onclick="location.reload()">${i18n.restart}</button>
+  </div>`;
+  document.getElementById("app").innerHTML += html;
 }
