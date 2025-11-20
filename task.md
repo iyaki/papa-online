@@ -18,10 +18,18 @@
     - [x] Implement **Game Over** logic immediately upon collision <!-- id: 7 -->
     - [x] Validate sequential connections (1->2, 2->3...) <!-- id: 8 -->
 
-- [ ] **Bug Fixes & Refinements**
-    - [ ] Fix collision bug at connection points (Player 2 instant loss) <!-- id: 23 -->
-    - [ ] Implement "Touch Number = Loss" rule <!-- id: 24 -->
-    - [ ] Fix "Back to Lobby" button functionality <!-- id: 25 -->
+- [x] **Bug Fixes & Refinements**
+    - [x] Fix collision bug at connection points (Player 2 instant loss) <!-- id: 23 -->
+    - [x] Implement "Touch Number = Loss" rule <!-- id: 24 -->
+    - [x] Fix "Back to Lobby" button functionality <!-- id: 25 -->
+
+- [x] **Async Play & Reconnection**
+    - [x] Client: Generate/Store Session Token (UUID) <!-- id: 26 -->
+    - [x] Server: Authenticate socket with Token and handle Reconnection <!-- id: 27 -->
+    - [x] Client: Handle `game_sync` to restore state <!-- id: 28 -->
+
+- [ ] **New Features**
+    - [ ] Implement "Surrender" button <!-- id: 29 -->
 
 - [x] **Game State & UI**
     - [x] Manage game state (current number, active player) <!-- id: 9 -->

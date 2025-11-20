@@ -25,15 +25,19 @@
 
         <!-- Game Screen -->
         <div id="game-screen" class="screen hidden">
-            <div class="game-header">
-                <div class="player-info">
+            <div id="game-info">
+                <div id="turn-indicator">
                     <span id="current-player-display">Esperando...</span>
                 </div>
-                <div class="game-status">
+                <div id="next-number">
                     Siguiente: <span id="next-number-display">1</span>
                 </div>
+                <div id="room-info">
+                    Sala: <span id="room-code-display"></span>
+                </div>
+                <button id="surrender-btn" class="secondary-btn"
+                    style="background-color: #ff4646; color: white; margin-top: 10px;">Rendirse</button>
             </div>
-
             <div class="canvas-container">
                 <canvas id="game-canvas"></canvas>
             </div>

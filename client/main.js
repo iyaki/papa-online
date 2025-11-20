@@ -11,19 +11,39 @@ const usernameInput = document.getElementById('username-input');
 const roomCodeInput = document.getElementById('room-code-input');
 const roomCodeDisplay = document.getElementById('room-code-display');
 
+// Session Management
+let sessionToken = localStorage.getItem('session_token');
+if (!sessionToken) {
+    sessionToken = crypto.randomUUID();
+    localStorage.setItem('session_token', sessionToken);
+}
+
 // Socket.io
-const socket = io();
+const socket = io({
+    auth: {
+        token: sessionToken
+    }
+});
 
 // Game Instance
 let game;
 
 // Socket Events
 socket.on('connect', () => {
-    console.log('Connected to server:', socket.id);
+    console.log('Connected to server with ID:', socket.id);
+});
+
+socket.on('connect_error', (err) => {
+    console.error('Connection error:', err.message);
 });
 
 socket.on('room_created', ({ roomCode }) => {
     console.log('Room created:', roomCode);
+    enterGame(roomCode);
+});
+
+socket.on('room_joined', ({ roomCode }) => {
+    console.log('Joined room:', roomCode);
     enterGame(roomCode);
 });
 
@@ -39,15 +59,56 @@ socket.on('game_start', ({ numbers, currentTurn }) => {
     }
 });
 
+// Reconnection / Sync Event
+socket.on('game_sync', ({ roomCode, numbers, lines, currentNumber, currentTurn, isGameOver }) => {
+    console.log("Reconnected to game:", roomCode);
+
+    // Restore UI
+    lobbyScreen.classList.add('hidden');
+    gameScreen.classList.remove('hidden');
+    roomCodeDisplay.innerText = roomCode;
+
+    const canvas = document.getElementById('game-canvas');
+    const username = usernameInput.value.trim();
+
+    // Initialize Game if not already
+    if (!game) {
+        game = new Game(canvas, username, roomCode, socket);
+    } else {
+        game.roomCode = roomCode; // Update game room code
+        game.username = username; // Update username if new game
+    }
+
+    // Restore Game State
+    game.syncState(numbers, lines, currentNumber, currentTurn, isGameOver);
+});
+
 socket.on('error', ({ message }) => {
     alert(message);
 });
 
+const surrenderBtn = document.getElementById('surrender-btn');
+
 // UI Events
 const restartBtn = document.getElementById('restart-btn');
 restartBtn.addEventListener('click', () => {
-    // Simple reload to go back to lobby and clear state
-    window.location.reload();
+    if (game && game.roomCode) {
+        socket.emit('leave_room', { roomCode: game.roomCode });
+    }
+    // Fallback reload
+    setTimeout(() => {
+        window.location.reload();
+    }, 100);
+});
+
+surrenderBtn.addEventListener('click', () => {
+    if (game && game.roomCode && !game.isGameOver) {
+        if (confirm("¿Estás seguro de que quieres rendirte?")) {
+            socket.emit('game_over', { roomCode: game.roomCode, reason: "El oponente se rindió" });
+            // We don't need to call game.gameOver() locally immediately, 
+            // the server will send 'game_over' event back to us (and opponent).
+        }
+    }
 });
 
 createRoomBtn.addEventListener('click', () => {

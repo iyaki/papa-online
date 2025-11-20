@@ -67,6 +67,21 @@ export class Game {
         this.draw();
     }
 
+    syncState(numbers, lines, currentNumber, currentTurn, isGameOver) {
+        this.numbers = numbers;
+        this.lines = lines;
+        this.currentNumber = currentNumber;
+        this.isGameOver = isGameOver;
+        this.updateTurn(currentTurn);
+
+        if (this.isGameOver) {
+            document.getElementById('game-over-screen').classList.remove('hidden');
+            document.getElementById('game-over-message').innerText = "Juego Terminado (Reconexión)";
+        }
+
+        this.draw();
+    }
+
     updateTurn(currentTurnId) {
         this.isMyTurn = (currentTurnId === this.myPlayerId);
         const display = document.getElementById('current-player-display');
