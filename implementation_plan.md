@@ -1,29 +1,18 @@
-# Implementation Plan - Juego de la Papa Online (Safe Zone)
+# Implementation Plan - Juego de la Papa Online (Username Persistence)
 
 ## Goal Description
-Implement a "Safe Zone" around the starting number of the current turn. Any line intersections occurring within this radius (15px) should be ignored to prevent immediate loss when starting a stroke near the previous line.
+Automatically save and restore the player's username using `localStorage` so they don't have to re-enter it every time they visit the page.
 
 ## Proposed Changes
 
 ### Frontend (Client)
-#### [MODIFY] [collision.js](file:///home/iyaki/Proyectos/iyaki/papa-online/client/collision.js)
-- Add `getIntersectionPoint(p1, p2, p3, p4)` helper.
-- Update `doPolylineIntersection` to accept an optional `safeZone` object `{ x, y, radius }`.
-- In `doPolylineIntersection`, if `doLinesIntersect` is true:
-    - Calculate intersection point.
-    - If point is within `safeZone`, ignore it.
-
-#### [MODIFY] [game.js](file:///home/iyaki/Proyectos/iyaki/papa-online/client/game.js)
-- In `checkCollisions`:
-    - Identify the `startNum` (current number).
-    - Pass `{ x: startNum.x, y: startNum.y, radius: 15 }` as `safeZone` to `doPolylineIntersection`.
+#### [MODIFY] [main.js](file:///home/iyaki/Proyectos/iyaki/papa-online/client/main.js)
+- On page load: `usernameInput.value = localStorage.getItem('username') || ''`.
+- On `create_room` or `join_room`: `localStorage.setItem('username', usernameInput.value)`.
 
 ## Verification Plan
 ### Manual Verification
-1.  Start game.
-2.  Draw line 1->2.
-3.  As Player 2, start drawing from 2.
-4.  Intentionally cross the end of the 1->2 line *inside* the circle of 2.
-5.  Verify NO Game Over.
-6.  Cross the line *outside* the circle.
-7.  Verify Game Over.
+1.  Enter username "TestUser".
+2.  Create Room.
+3.  Reload page.
+4.  Verify "TestUser" is still in the input field.

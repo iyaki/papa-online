@@ -22,7 +22,7 @@
     - [x] Fix collision bug at connection points (Player 2 instant loss) <!-- id: 23 -->
     - [x] Implement "Touch Number = Loss" rule <!-- id: 24 -->
     - [x] Fix "Back to Lobby" button functionality <!-- id: 25 -->
-    - [ ] Implement "Safe Zone" in start number (ignore collisions inside radius) <!-- id: 30 -->
+    - [x] Implement "Safe Zone" in start number (ignore collisions inside radius) <!-- id: 30 -->
 
 - [x] **Async Play & Reconnection**
     - [x] Client: Generate/Store Session Token (UUID) <!-- id: 26 -->
@@ -44,6 +44,7 @@
     - [x] Handle player disconnects <!-- id: 15 -->
 
 - [ ] **Polishing & Verification**
+    - [ ] Persist Username in LocalStorage <!-- id: 31 -->
     - [ ] Polish UI (CSS variables, responsive layout) <!-- id: 16 -->
     - [ ] Verify responsive canvas (Mobile/Desktop) <!-- id: 17 -->
     - [ ] Manual Verification (Playtest) <!-- id: 18 -->

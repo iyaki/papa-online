@@ -111,12 +111,19 @@ surrenderBtn.addEventListener('click', () => {
     }
 });
 
+// Load Username
+const savedUsername = localStorage.getItem('username');
+if (savedUsername) {
+    usernameInput.value = savedUsername;
+}
+
 createRoomBtn.addEventListener('click', () => {
     const username = usernameInput.value.trim();
     if (!username) {
         alert('Por favor ingresa un nombre');
         return;
     }
+    localStorage.setItem('username', username);
     socket.emit('create_room', { username });
 });
 
@@ -127,6 +134,7 @@ joinRoomBtn.addEventListener('click', () => {
         alert('Ingresa nombre y código de sala');
         return;
     }
+    localStorage.setItem('username', username);
     socket.emit('join_room', { username, roomCode });
     enterGame(roomCode); // Optimistic entry, server will error if failed
 });
