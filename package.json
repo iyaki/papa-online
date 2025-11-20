@@ -1,0 +1,9 @@
+{
+    "name": "papa-online-root",
+    "version": "1.0.0",
+    "scripts": {
+        "install:server": "cd server && npm install",
+        "dev": "cd server && npm run dev",
+        "start": "cd server && npm start"
+    }
+}

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego de la Papa Online</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div id="app">
+        <!-- Lobby Screen -->
+        <div id="lobby-screen" class="screen">
+            <h1>Juego de la Papa</h1>
+            <div class="lobby-controls">
+                <input type="text" id="username-input" placeholder="Tu Nombre" maxlength="10">
+                <button id="create-room-btn" class="btn primary">Crear Sala</button>
+                <div class="join-room">
+                    <input type="text" id="room-code-input" placeholder="Código de Sala">
+                    <button id="join-room-btn" class="btn secondary">Unirse</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="game-screen" class="screen hidden">
+            <div class="game-header">
+                <div class="player-info">
+                    <span id="current-player-display">Esperando...</span>
+                </div>
+                <div class="game-status">
+                    Siguiente: <span id="next-number-display">1</span>
+                </div>
+            </div>
+
+            <div class="canvas-container">
+                <canvas id="game-canvas"></canvas>
+            </div>
+
+            <div class="game-footer">
+                Sala: <span id="room-code-display">---</span>
+            </div>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="game-over-screen" class="screen hidden overlay">
+            <div class="modal">
+                <h2 id="game-over-title">¡Juego Terminado!</h2>
+                <p id="game-over-message"></p>
+                <button id="restart-btn" class="btn primary">Volver al Lobby</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script type="module" src="main.js"></script>
+</body>
+
+</html>
