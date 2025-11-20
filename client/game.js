@@ -173,29 +173,14 @@ export class Game {
     }
 
     checkCollisions(path) {
+        // Define Safe Zone around the starting number
+        const startNum = this.numbers.find(n => n.value === this.currentNumber);
+        const safeZone = startNum ? { x: startNum.x, y: startNum.y, radius: 15 } : null;
+
         // Check against all existing lines
-        // IMPORTANT: We must NOT check against the immediately preceding line (lines[lines.length-1])
-        // because we are starting from its end point.
-        // However, we SHOULD check if we loop back and cross it later.
-        // For simplicity/robustness: We ignore the collision if it happens strictly at the start point.
-        // But `doPolylineIntersection` iterates all segments.
-
-        // Strategy: Exclude the very last line from the check IF we are connecting to it.
-        // Since we always connect sequentially, the last line in `this.lines` is the one ending at `currentNumber`.
-        // So we should be careful checking against `this.lines[this.lines.length - 1]`.
-
-        for (let i = 0; i < this.lines.length; i++) {
-            const existingPath = this.lines[i];
-
-            // If this is the last line (the one we are connecting FROM), be lenient near the start
-            if (i === this.lines.length - 1) {
-                if (this.doPolylineIntersectionWithGrace(path, existingPath, true)) {
-                    return true;
-                }
-            } else {
-                if (doPolylineIntersection(path, existingPath)) {
-                    return true;
-                }
+        for (const existingPath of this.lines) {
+            if (doPolylineIntersection(path, existingPath, safeZone)) {
+                return true;
             }
         }
 
@@ -205,7 +190,8 @@ export class Game {
             const p3 = path[lastIdx - 1];
             const p4 = path[lastIdx];
             for (let i = 0; i < lastIdx - 2; i++) {
-                if (doPolylineIntersection([path[i], path[i + 1]], [p3, p4])) {
+                // Self-intersection usually happens far from start, but we can pass safeZone too just in case
+                if (doPolylineIntersection([path[i], path[i + 1]], [p3, p4], safeZone)) {
                     return true;
                 }
             }
@@ -214,57 +200,6 @@ export class Game {
         // Check for Number Collisions (Rule 2)
         if (this.checkNumberCollisions(path)) {
             return true;
-        }
-
-        return false;
-    }
-
-    // Custom intersection check that ignores the start point collision with the previous line
-    doPolylineIntersectionWithGrace(newPath, oldPath, isPreviousLine) {
-        // We only care if the NEW path intersects the OLD path.
-        // Since newPath starts where oldPath ends, they share a point.
-        // We want to ignore intersections that are purely at the connection point.
-
-        // Simple heuristic: Don't check the first few segments of newPath against the last few of oldPath?
-        // Or just rely on `doLinesIntersect` handling shared endpoints?
-        // The issue is likely that `doLinesIntersect` handles EXACT shared points, but freehand might be slightly off or overlap due to thickness/pixel snapping?
-        // Actually `doLinesIntersect` uses an epsilon.
-
-        // Let's try to just use the standard check but skip the specific segment pair that connects them?
-        // No, because they are arrays of points.
-
-        // Let's just use the standard check. If it fails, it means our epsilon isn't enough or we are crossing back.
-        // But wait, the user said "starts to draw".
-        // If I draw 1->2. Line ends at 2.
-        // Player 2 starts at 2.
-        // If Player 2 moves slightly "backwards" into the line 1->2, that IS a collision (and should be).
-        // If Player 2 moves away, it shouldn't be.
-
-        // Maybe the issue is that `targetNum.x` isn't EXACTLY the last point of the previous line?
-        // `this.lines` stores the drawn path. The last point of the last line MIGHT NOT be exactly `targetNum` coordinates if we snapped it?
-        // In `handleMouseUp`, we did: `this.currentLine.push({ x: nextNum.x, y: nextNum.y });` (Snap).
-        // So the previous line ends EXACTLY at the number center.
-        // The new line starts EXACTLY at the number center.
-        // So they share an exact point.
-
-        // Debugging hypothesis: `doLinesIntersect` might be returning true for collinear overlaps if the mouse jitter makes it look like we are retracing the line?
-        // Or maybe I should just skip checking against the last line entirely for the *first segment* of the new line?
-
-        // Let's skip checking the FIRST segment of `newPath` against the LAST segment of `oldPath`.
-
-        for (let i = 0; i < newPath.length - 1; i++) {
-            for (let j = 0; j < oldPath.length - 1; j++) {
-                // If this is the connection point (first of new, last of old), skip
-                if (i === 0 && j === oldPath.length - 2) {
-                    continue;
-                }
-
-                // Also skip the one before that to be safe? No.
-
-                if (doPolylineIntersection([newPath[i], newPath[i + 1]], [oldPath[j], oldPath[j + 1]])) {
-                    return true;
-                }
-            }
         }
         return false;
     }
