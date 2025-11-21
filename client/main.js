@@ -125,6 +125,55 @@ function sendNotification(title, body) {
     }
 }
 
+// Confetti animation for winners
+function createConfetti() {
+    const duration = 3000;
+    const animationEnd = Date.now() + duration;
+    const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f9ca24', '#6c5ce7', '#a29bfe'];
+
+    function randomInRange(min, max) {
+        return Math.random() * (max - min) + min;
+    }
+
+    const interval = setInterval(function () {
+        const timeLeft = animationEnd - Date.now();
+
+        if (timeLeft <= 0) {
+            return clearInterval(interval);
+        }
+
+        const particleCount = 3;
+
+        for (let i = 0; i < particleCount; i++) {
+            const confetti = document.createElement('div');
+            confetti.style.position = 'fixed';
+            confetti.style.width = '10px';
+            confetti.style.height = '10px';
+            confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            confetti.style.left = Math.random() * window.innerWidth + 'px';
+            confetti.style.top = '-10px';
+            confetti.style.opacity = '1';
+            confetti.style.transform = 'rotate(' + Math.random() * 360 + 'deg)';
+            confetti.style.transition = 'all ' + (2 + Math.random() * 2) + 's ease-out';
+            confetti.style.zIndex = '10000';
+            confetti.style.pointerEvents = 'none';
+            confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+
+            document.body.appendChild(confetti);
+
+            setTimeout(() => {
+                confetti.style.top = window.innerHeight + 'px';
+                confetti.style.opacity = '0';
+                confetti.style.transform = 'rotate(' + (Math.random() * 720) + 'deg)';
+            }, 50);
+
+            setTimeout(() => {
+                confetti.remove();
+            }, 4000);
+        }
+    }, 50);
+}
+
 // Game Instance
 let game;
 
@@ -228,7 +277,7 @@ socket.on('error', ({ message }) => {
     alert(message);
 });
 
-const surrenderBtn = document.getElementById('surrender-btn');
+
 
 // UI Events
 const restartBtn = document.getElementById('restart-btn');
@@ -274,15 +323,7 @@ exportBtn.addEventListener('click', () => {
     }
 });
 
-surrenderBtn.addEventListener('click', () => {
-    if (game && game.roomCode && !game.isGameOver) {
-        if (confirm("¿Estás seguro de que quieres rendirte?")) {
-            socket.emit('game_over', { roomCode: game.roomCode, reason: "El oponente se rindió" });
-            // We don't need to call game.gameOver() locally immediately, 
-            // the server will send 'game_over' event back to us (and opponent).
-        }
-    }
-});
+
 
 // Load Username
 const savedUsername = localStorage.getItem('username');

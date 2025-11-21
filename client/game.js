@@ -63,6 +63,11 @@ export class Game {
 
     startGame(numbers, currentTurn) {
         this.numbers = numbers;
+        this.currentNumber = 1;
+        this.lines = [];
+        this.currentLine = null;
+        this.isGameOver = false;
+        this.gameStartTime = Date.now(); // Track start time
         this.updateTurn(currentTurn);
         this.draw();
     }
@@ -86,9 +91,18 @@ export class Game {
         this.isMyTurn = (currentTurnId === this.myPlayerId);
         const display = document.getElementById('current-player-display');
         display.innerText = this.isMyTurn ? "Tu Turno" : "Turno del Oponente";
-        display.style.color = this.isMyTurn ? "#4caf50" : "#ff9800";
 
-        document.getElementById('next-number-display').innerText = this.currentNumber;
+        // Remove both classes first
+        display.classList.remove('my-turn', 'opponent-turn');
+
+        // Add appropriate class for animation
+        if (this.isMyTurn) {
+            display.classList.add('my-turn');
+        } else {
+            display.classList.add('opponent-turn');
+        }
+
+        document.getElementById('next-number-display').innerText = this.currentNumber + 1;
     }
 
     resizeCanvas() {
@@ -230,8 +244,45 @@ export class Game {
         this.isGameOver = true;
         this.currentLine = null;
         this.draw();
-        document.getElementById('game-over-message').innerText = reason;
+
+        const message = document.getElementById('game-over-message');
+        message.innerText = reason;
+
+        // Check if player won (reason contains "Ganaste")
+        const isWinner = reason.includes('Ganaste');
+
+        // Show confetti for winners
+        if (isWinner && typeof createConfetti === 'function') {
+            createConfetti();
+        }
+
+        // Add game stats below message
+        const statsDiv = document.createElement('div');
+        statsDiv.style.marginTop = '20px';
+        statsDiv.style.fontSize = '1.2rem';
+        statsDiv.style.color = '#666';
+        statsDiv.innerHTML = `
+            <div>🎯 Números conectados: ${this.currentNumber - 1}</div>
+        `;
+
+        // Insert after message if not already there
+        if (!message.nextElementSibling || !message.nextElementSibling.classList.contains('game-stats')) {
+            statsDiv.classList.add('game-stats');
+            message.parentNode.insertBefore(statsDiv, message.nextSibling);
+        }
+
         document.getElementById('game-over-screen').classList.remove('hidden');
+    }
+
+    startGame(numbers, currentTurn) {
+        this.numbers = numbers;
+        this.currentNumber = 1;
+        this.lines = [];
+        this.currentLine = null;
+        this.isGameOver = false;
+
+        this.updateTurn(currentTurn);
+        this.draw();
     }
 
     reset() {
@@ -246,6 +297,11 @@ export class Game {
 
     draw() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        // Request animation frame for continuous pulse animation
+        if (!this.isGameOver && this.currentNumber <= this.numbers.length) {
+            requestAnimationFrame(() => this.draw());
+        }
 
         // Draw Lines (Paths)
         this.ctx.lineWidth = 3;
@@ -293,10 +349,19 @@ export class Game {
                 this.ctx.lineWidth = 2;
                 this.ctx.stroke();
             } else if (num.value === this.currentNumber + 1) {
-                this.ctx.fillStyle = 'rgba(255, 152, 0, 0.2)'; // Light orange highlight
+                // Pulsing animation for next number
+                const pulseSize = 2 + Math.sin(Date.now() / 300) * 2;
+                this.ctx.fillStyle = 'rgba(255, 152, 0, 0.3)'; // Light orange highlight
                 this.ctx.fill();
-                this.ctx.strokeStyle = '#2c3e50';
-                this.ctx.lineWidth = 2;
+                this.ctx.strokeStyle = '#ff9800';
+                this.ctx.lineWidth = pulseSize;
+                this.ctx.stroke();
+
+                // Outer glow ring
+                this.ctx.beginPath();
+                this.ctx.arc(num.x, num.y, 22 + pulseSize, 0, Math.PI * 2);
+                this.ctx.strokeStyle = 'rgba(255, 152, 0, 0.3)';
+                this.ctx.lineWidth = 1;
                 this.ctx.stroke();
             } else if (num.value < this.currentNumber) {
                 // Completed numbers

@@ -18,29 +18,26 @@
             <h1>Juego de la Papa</h1>
             <div class="lobby-controls">
                 <input type="text" id="username-input" placeholder="Tu Nombre" maxlength="10">
-                <div class="input-group">
-                    <label for="point-count-select">Cantidad de Puntos:</label>
-                    <select id="point-count-select"
-                        style="padding: 15px; font-size: 1.2rem; background: transparent; border: none; border-bottom: 2px solid var(--text-color); color: var(--text-color); outline: none; width: 100%;">
-                        <option value="10">10 puntos</option>
-                        <option value="15">15 puntos</option>
-                        <option value="20" selected>20 puntos</option>
-                        <option value="25">25 puntos</option>
-                        <option value="30">30 puntos</option>
+                <div class="create-room-group">
+                    <select id="point-count-select" class="sketchy-input" title="Cantidad de puntos">
+                        <option value="10">10 pts</option>
+                        <option value="15">15 pts</option>
+                        <option value="20" selected>20 pts</option>
+                        <option value="25">25 pts</option>
+                        <option value="30">30 pts</option>
                     </select>
+                    <button id="create-room-btn" class="primary-btn">Crear Sala</button>
                 </div>
-                <button id="create-room-btn" class="primary-btn">Crear Sala</button>
-                <div class="join-room">
-                    <input type="text" id="room-code-input" placeholder="Código de Sala" maxlength="6">
-                    <button id="join-room-btn" class="secondary-btn">Unirse a Sala</button>
+                <div class="join-room-group">
+                    <input type="text" id="room-code-input" placeholder="Código" maxlength="6" class="sketchy-input">
+                    <button id="join-room-btn" class="primary-btn">Unirse</button>
                 </div>
                 <button id="stats-btn" class="secondary-btn" style="margin-top: 10px;">📊 Estadísticas</button>
 
                 <div id="my-games-container"
                     style="width: 100%; border-top: 2px dashed var(--text-color); padding-top: 1rem;">
                     <h3>Mis Partidas</h3>
-                    <div id="my-games-list"
-                        style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
+                    <div id="my-games-list">
                         <!-- Games will be injected here -->
                     </div>
                 </div>
@@ -57,36 +54,49 @@
         <!-- Game Screen -->
         <div id="game-screen" class="screen hidden">
             <div id="game-info">
-                <button id="back-to-menu-btn" class="primary-btn"
-                    style="margin-right: 10px; font-size: 1rem; padding: 5px 10px;">Menú</button>
-                <div id="turn-indicator">
-                    <span id="current-player-display">Esperando...</span>
-                </div>
-                <div id="next-number">
-                    Siguiente: <span id="next-number-display">1</span>
-                </div>
-                <div id="room-info">
-                    Sala: <span id="room-code-display"></span>
-                    <button id="share-btn" class="icon-btn" aria-label="Compartir">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                <div class="game-header">
+                    <button id="back-to-menu-btn" class="icon-btn" title="Volver al Menú">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="18" cy="5" r="3"></circle>
-                            <circle cx="6" cy="12" r="3"></circle>
-                            <circle cx="18" cy="19" r="3"></circle>
-                            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-                            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                            <polyline points="9 22 9 12 15 12 15 22"></polyline>
                         </svg>
                     </button>
+
+                    <div class="room-header-center">
+                        <div id="room-info" class="room-badge">
+                            Sala: <span id="room-code-display"></span>
+                        </div>
+
+                        <button id="share-btn" class="icon-btn" aria-label="Compartir">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <circle cx="18" cy="5" r="3"></circle>
+                                <circle cx="6" cy="12" r="3"></circle>
+                                <circle cx="18" cy="19" r="3"></circle>
+                                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div style="width: 24px;"></div> <!-- Spacer for balance -->
                 </div>
-                <button id="surrender-btn" class="secondary-btn"
-                    style="background-color: #ff4646; color: white; margin-top: 10px;">Rendirse</button>
+
+                <div class="game-status-bar">
+                    <div id="turn-indicator">
+                        <span id="current-player-display">Esperando...</span>
+                    </div>
+                    <div id="next-number" class="next-number-badge">
+                        <span class="next-label">Siguiente:</span>
+                        <span id="next-number-display" class="number-circle">1</span>
+                    </div>
+                </div>
+
             </div>
             <div class="canvas-container">
                 <canvas id="game-canvas"></canvas>
-            </div>
-
-            <div class="game-footer">
-                Sala: <span id="room-code-display">---</span>
             </div>
         </div>
 
