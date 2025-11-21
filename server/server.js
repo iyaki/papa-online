@@ -108,16 +108,20 @@ io.on('connection', (socket) => {
 
     socket.on('create_room', ({ username }) => {
         const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+
+        // Initialize game immediately
+        const numbers = generateNumbers(20, 600, 800);
+
         rooms[roomCode] = {
             players: [{
                 id: socket.id,
                 username,
                 token: token // Store token
             }],
-            numbers: [],
+            numbers: numbers,
             lines: [],
             currentNumber: 1,
-            currentTurn: null
+            currentTurn: socket.id // Creator starts first
         };
 
         // Save Session (Multi-room)
@@ -131,6 +135,13 @@ io.on('connection', (socket) => {
 
         socket.join(roomCode);
         socket.emit('room_created', { roomCode, token });
+
+        // Emit game_start immediately so creator can draw
+        socket.emit('game_start', {
+            numbers: numbers,
+            currentTurn: socket.id
+        });
+
         console.log(`Room ${roomCode} created by ${username}`);
         sendMyGames();
     });
@@ -180,14 +191,35 @@ io.on('connection', (socket) => {
 
                 console.log(`${username} joined room ${roomCode}`);
 
-                // Start Game if 2 players
+                // Send current game state to joining player (game already started when room was created)
                 if (room.players.length === 2) {
-                    room.numbers = generateNumbers(20, 600, 800); // Portrait mode for mobile
-                    room.currentTurn = room.players[0].id;
-                    io.to(roomCode).emit('game_start', {
+                    // If turn is null (creator made first move and is waiting), assign turn to joining player
+                    if (room.currentTurn === null) {
+                        room.currentTurn = socket.id;
+                    }
+
+                    // Always send full game state to ensure proper synchronization
+                    socket.emit('game_sync', {
+                        roomCode,
                         numbers: room.numbers,
-                        currentTurn: room.currentTurn
+                        lines: room.lines,
+                        currentNumber: room.currentNumber,
+                        currentTurn: room.currentTurn,
+                        isGameOver: false,
+                        winner: null,
+                        loser: null,
+                        players: room.players
                     });
+
+                    // Also notify the creator of the updated turn
+                    const creator = room.players.find(p => p.id !== socket.id);
+                    if (creator) {
+                        io.to(creator.id).emit('move_made', {
+                            line: null,
+                            nextNumber: room.currentNumber,
+                            currentTurn: room.currentTurn
+                        });
+                    }
                 }
                 sendMyGames();
             } else {
@@ -221,9 +253,14 @@ io.on('connection', (socket) => {
             room.lines.push(line);
             room.currentNumber++;
 
-            // Switch turn
-            const nextPlayer = room.players.find(p => p.id !== socket.id);
-            room.currentTurn = nextPlayer ? nextPlayer.id : null;
+            // Switch turn only if there are 2 players
+            if (room.players.length === 2) {
+                const nextPlayer = room.players.find(p => p.id !== socket.id);
+                room.currentTurn = nextPlayer ? nextPlayer.id : socket.id;
+            } else {
+                // Set turn to null (waiting for opponent) after creator's first move
+                room.currentTurn = null;
+            }
 
             io.to(roomCode).emit('move_made', {
                 line,
