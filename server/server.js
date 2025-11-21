@@ -106,11 +106,11 @@ io.on('connection', (socket) => {
         sendMyGames();
     });
 
-    socket.on('create_room', ({ username }) => {
+    socket.on('create_room', ({ username, pointCount = 20 }) => {
         const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
 
-        // Initialize game immediately
-        const numbers = generateNumbers(20, 600, 800);
+        // Initialize game immediately with specified point count
+        const numbers = generateNumbers(pointCount, 600, 800);
 
         rooms[roomCode] = {
             players: [{
@@ -142,7 +142,7 @@ io.on('connection', (socket) => {
             currentTurn: socket.id
         });
 
-        console.log(`Room ${roomCode} created by ${username}`);
+        console.log(`Room ${roomCode} created by ${username} with ${pointCount} points`);
         sendMyGames();
     });
 

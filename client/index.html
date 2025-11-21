@@ -18,6 +18,17 @@
             <h1>Juego de la Papa</h1>
             <div class="lobby-controls">
                 <input type="text" id="username-input" placeholder="Tu Nombre" maxlength="10">
+                <div class="input-group">
+                    <label for="point-count-select">Cantidad de Puntos:</label>
+                    <select id="point-count-select"
+                        style="padding: 15px; font-size: 1.2rem; background: transparent; border: none; border-bottom: 2px solid var(--text-color); color: var(--text-color); outline: none; width: 100%;">
+                        <option value="10">10 puntos</option>
+                        <option value="15">15 puntos</option>
+                        <option value="20" selected>20 puntos</option>
+                        <option value="25">25 puntos</option>
+                        <option value="30">30 puntos</option>
+                    </select>
+                </div>
                 <button id="create-room-btn" class="primary-btn">Crear Sala</button>
                 <div class="join-room">
                     <input type="text" id="room-code-input" placeholder="Código de Sala" maxlength="6">

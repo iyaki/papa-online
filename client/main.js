@@ -255,8 +255,9 @@ createRoomBtn.addEventListener('click', () => {
         alert('Por favor ingresa un nombre');
         return;
     }
+    const pointCount = parseInt(document.getElementById('point-count-select').value);
     localStorage.setItem('username', username);
-    socket.emit('create_room', { username });
+    socket.emit('create_room', { username, pointCount });
 });
 
 joinRoomBtn.addEventListener('click', () => {
