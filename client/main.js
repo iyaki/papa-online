@@ -169,6 +169,18 @@ restartBtn.addEventListener('click', () => {
     }, 100);
 });
 
+const exportBtn = document.getElementById('export-btn');
+
+exportBtn.addEventListener('click', () => {
+    if (game) {
+        const dataUrl = game.exportToImage();
+        const link = document.createElement('a');
+        link.download = `juego-papa-${new Date().toISOString().split('T')[0]}.png`;
+        link.href = dataUrl;
+        link.click();
+    }
+});
+
 surrenderBtn.addEventListener('click', () => {
     if (game && game.roomCode && !game.isGameOver) {
         if (confirm("¿Estás seguro de que quieres rendirte?")) {
@@ -232,11 +244,20 @@ socket.on('my_games_list', (games) => {
             align-items: center;
         `;
 
-        const status = g.isMyTurn ? '<span style="color: var(--accent-color); font-weight: bold;">¡Tu Turno!</span>' : 'Esperando...';
+        let statusHtml = '';
+        if (g.isGameOver) {
+            if (g.winner === sessionToken) {
+                statusHtml = '<span style="color: #4caf50; font-weight: bold;">¡Ganaste!</span>';
+            } else {
+                statusHtml = '<span style="color: #f44336; font-weight: bold;">Perdiste</span>';
+            }
+        } else {
+            statusHtml = g.isMyTurn ? '<span style="color: var(--accent-color); font-weight: bold;">¡Tu Turno!</span>' : 'Esperando...';
+        }
 
         div.innerHTML = `
             <span>Sala: <b>${g.roomCode}</b> vs ${g.opponentName}</span>
-            ${status}
+            ${statusHtml}
         `;
 
         div.addEventListener('click', () => {

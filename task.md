@@ -67,11 +67,19 @@
     - [x] **JS**: Ensure touch events work smoothly on canvas (prevent scrolling while drawing) <!-- id: 47 -->
     - [x] **Res**: Switch to Portrait resolution (600x800) <!-- id: 48 -->
 
-- [ ] **Shareable Game Links**
-    - [ ] **Client**: Add "Share" button in Game Screen (copies URL with `?room=CODE`) <!-- id: 49 -->
-    - [ ] **Client**: Handle `?room=CODE` on page load <!-- id: 50 -->
-    - [ ] **Client**: If session exists, auto-join room <!-- id: 51 -->
-    - [ ] **Client**: If no session, pre-fill room code and focus username input <!-- id: 52 -->
+- [x] **Shareable Game Links**
+    - [x] **Client**: Add "Share" button in Game Screen (copies URL with `?room=CODE`) <!-- id: 49 -->
+    - [x] **Client**: Handle `?room=CODE` on page load <!-- id: 50 -->
+    - [x] **Client**: If session exists, auto-join room <!-- id: 51 -->
+    - [x] **Client**: If no session, pre-fill room code and focus username input <!-- id: 52 -->
+    - [x] **Client**: Use `navigator.share` for native sharing <!-- id: 53 -->
+
+- [ ] **Async Victory Notifications & Export**
+    - [ ] **Server**: Store `winner`/`loser` and set 1h timeout (keep data) <!-- id: 54 -->
+    - [ ] **Server**: Update `sendMyGames` to include result status <!-- id: 55 -->
+    - [ ] **Client**: Update "My Games" list to show "Ganaste/Perdiste" <!-- id: 56 -->
+    - [ ] **Client**: Add "Export" button to Game Over screen <!-- id: 58 -->
+    - [ ] **Client**: Implement `exportGameToImage` (Canvas -> Image with overlay) <!-- id: 59 -->
 
 - [ ] **Polishing & Verification**
     - [ ] Polish UI (CSS variables, responsive layout) <!-- id: 16 -->

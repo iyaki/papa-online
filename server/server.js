@@ -68,7 +68,9 @@ io.on('connection', (socket) => {
                     roomCode: code,
                     opponentName: opponent ? opponent.username : 'Esperando...',
                     isMyTurn: r.currentTurn === socket.id,
-                    isGameOver: false // Simplified for now
+                    isGameOver: !!r.winner,
+                    winner: r.winner,
+                    loser: r.loser
                 };
             }).filter(g => g !== null);
             socket.emit('my_games_list', myGames);
@@ -205,7 +207,9 @@ io.on('connection', (socket) => {
                 lines: room.lines,
                 currentNumber: room.currentNumber,
                 currentTurn: room.currentTurn,
-                isGameOver: false
+                isGameOver: !!room.winner,
+                winner: room.winner,
+                loser: room.loser
             });
         }
     });
@@ -238,9 +242,29 @@ io.on('connection', (socket) => {
     socket.on('game_over', ({ roomCode, reason }) => {
         const room = rooms[roomCode];
         if (room) {
-            io.to(roomCode).emit('game_over', { reason, loser: socket.id });
+            // Find loser (current socket)
+            const loserPlayer = room.players.find(p => p.id === socket.id);
+            room.loser = loserPlayer ? loserPlayer.token : 'unknown';
+
+            // Find winner (the other player)
+            const winnerPlayer = room.players.find(p => p.id !== socket.id);
+            room.winner = winnerPlayer ? winnerPlayer.token : 'unknown';
+
+            io.to(roomCode).emit('game_over', { reason, loser: room.loser, winner: room.winner });
+
+            // Notify for list update
+            room.players.forEach(p => io.to(p.id).emit('my_games_update'));
+
+            // Schedule cleanup (1 hour)
+            setTimeout(() => {
+                if (rooms[roomCode]) {
+                    delete rooms[roomCode];
+                    console.log(`Room ${roomCode} deleted (timeout)`);
+                }
+            }, 60 * 60 * 1000);
         }
     });
+
 
     socket.on('leave_room', ({ roomCode }) => {
         // This is now "Surrender/Quit"

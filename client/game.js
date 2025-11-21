@@ -321,4 +321,39 @@ export class Game {
             this.ctx.fillText(num.value, num.x, num.y + 2); // +2 for visual centering with this font
         });
     }
+
+    exportToImage() {
+        const exportCanvas = document.createElement('canvas');
+        exportCanvas.width = this.canvas.width;
+        exportCanvas.height = this.canvas.height + 100; // Extra space for footer
+        const ctx = exportCanvas.getContext('2d');
+
+        // Background
+        ctx.fillStyle = '#f0f0f0'; // Paper color
+        ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+
+        // Draw Grid (Simplified)
+        ctx.strokeStyle = '#e0e0e0';
+        ctx.lineWidth = 1;
+        for (let x = 0; x < exportCanvas.width; x += 20) {
+            ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, this.canvas.height); ctx.stroke();
+        }
+        for (let y = 0; y < this.canvas.height; y += 20) {
+            ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(exportCanvas.width, y); ctx.stroke();
+        }
+
+        // Draw Game Content
+        ctx.drawImage(this.canvas, 0, 0);
+
+        // Footer
+        ctx.fillStyle = '#333';
+        ctx.font = 'bold 24px "Gochi Hand", cursive, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Juego de la Papa Online', exportCanvas.width / 2, this.canvas.height + 40);
+
+        ctx.font = '16px sans-serif';
+        ctx.fillText(`Fecha: ${new Date().toLocaleDateString()}`, exportCanvas.width / 2, this.canvas.height + 70);
+
+        return exportCanvas.toDataURL('image/png');
+    }
 }
