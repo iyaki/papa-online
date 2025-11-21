@@ -1,42 +1,41 @@
-# Implementation Plan - Juego de la Papa Online (Async Notifications & Export)
+# Implementation Plan - Juego de la Papa Online (Local Statistics)
 
 ## Goal Description
-1.  Notify players of game results (Win/Loss) in the lobby.
-2.  Allow players to export the final game board as an image for social media.
-3.  Manage server resources efficiently while enabling these features.
+Track wins and losses locally (per device) against different opponents. Display these statistics in a modal accessible from the lobby.
 
 ## Proposed Changes
 
-### Backend (Server)
-#### [MODIFY] [server.js](file:///home/iyaki/Proyectos/iyaki/papa-online/server/server.js)
-- **`game_over` Event**:
-    - Update `room.winner` and `room.loser`.
-    - **Retention Policy**: Keep `lines` and `numbers` for **1 hour**.
-        - *Reasoning*: Text data (JSON) is extremely lightweight (~5KB/game). Keeping it allows offline players to reconnect, fetch the state, and generate the export image. Immediate deletion would prevent async export.
-    - **Auto-Cleanup**: Set `setTimeout` to delete the entire room object after 1 hour.
-- **`sendMyGames` Helper**:
-    - Include `winner` and `loser` status.
-
 ### Frontend (Client)
 #### [MODIFY] [main.js](file:///home/iyaki/Proyectos/iyaki/papa-online/client/main.js)
-- **`my_games_list` Handler**:
-    - Show "¡Ganaste!" (Green) / "Perdiste" (Red) / "Jugando" (Neutral).
-- **Export Logic**:
-    - Add function `exportGameToImage(gameInstance)`.
-    - Create a temporary canvas (or use existing).
-    - Draw a background (paper texture).
-    - Draw the game state (lines, numbers).
-    - Overlay text: "Juego de la Papa", "Ganador: [Name]", Date.
-    - Convert to Blob/URL and trigger download/share.
+- **Stats Logic**:
+    - Create `loadStats()` and `saveStats(stats)` helpers.
+    - Create `updateStats(opponentName, isWin)`.
+        - Load stats.
+        - Increment `totalWins` / `totalLosses`.
+        - Find or create entry for `opponentName`.
+        - Increment specific win/loss.
+        - Save stats.
+    - **Trigger**: Call `updateStats` inside `game_sync` handler when `isGameOver` is true AND `winner` is set.
+        - **Crucial**: Need to prevent double-counting. Store `processedGames` list in localStorage (list of roomCodes) to ensure we only count each game once.
+- **UI Logic**:
+    - Add "Stats" button listener.
+    - Render stats modal content:
+        - Header: Total Wins / Total Losses.
+        - List: Opponent Name | Wins | Losses.
 
 #### [MODIFY] [index.html](file:///home/iyaki/Proyectos/iyaki/papa-online/client/index.html)
-- **Game Over Modal**:
-    - Add "📸 Guardar Recuerdo" (Export) button.
+- **Lobby**: Add `<button id="stats-btn" class="secondary-btn">📊 Estadísticas</button>`.
+- **Modal**: Add `#stats-modal` structure (hidden by default).
+
+#### [MODIFY] [style.css](file:///home/iyaki/Proyectos/iyaki/papa-online/client/style.css)
+- **Stats Modal**: Style the modal and the list of opponents (scrollable if long).
 
 ## Verification Plan
 ### Manual Verification
-1.  Play a game to completion.
-2.  Verify "My Games" list shows the result.
-3.  Click "Guardar Recuerdo".
-4.  Verify an image is generated/downloaded with the game board and metadata.
-5.  Verify server deletes room after timeout (can simulate by reducing timeout).
+1.  Play a game and win.
+2.  Check Stats modal. Should show 1 Win vs Opponent.
+3.  Reload page. Stats should persist.
+4.  Play another game against same opponent and lose.
+5.  Stats should show 1 Win / 1 Loss.
+6.  Play against different opponent.
+7.  Stats should show new entry.

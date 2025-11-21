@@ -74,12 +74,19 @@
     - [x] **Client**: If no session, pre-fill room code and focus username input <!-- id: 52 -->
     - [x] **Client**: Use `navigator.share` for native sharing <!-- id: 53 -->
 
-- [ ] **Async Victory Notifications & Export**
-    - [ ] **Server**: Store `winner`/`loser` and set 1h timeout (keep data) <!-- id: 54 -->
-    - [ ] **Server**: Update `sendMyGames` to include result status <!-- id: 55 -->
-    - [ ] **Client**: Update "My Games" list to show "Ganaste/Perdiste" <!-- id: 56 -->
-    - [ ] **Client**: Add "Export" button to Game Over screen <!-- id: 58 -->
-    - [ ] **Client**: Implement `exportGameToImage` (Canvas -> Image with overlay) <!-- id: 59 -->
+- [x] **Async Victory Notifications & Export**
+    - [x] **Server**: Store `winner`/`loser` and set 1h timeout (keep data) <!-- id: 54 -->
+    - [x] **Server**: Update `sendMyGames` to include result status <!-- id: 55 -->
+    - [x] **Client**: Update "My Games" list to show "Ganaste/Perdiste" <!-- id: 56 -->
+    - [x] **Client**: Add "Export" button to Game Over screen <!-- id: 58 -->
+    - [x] **Client**: Implement `exportGameToImage` (Canvas -> Image with overlay) <!-- id: 59 -->
+    - [x] **Refinement**: Include losing stroke, opponent name, and clear result in export <!-- id: 60 -->
+
+- [ ] **Local Statistics**
+    - [ ] **Client**: Implement `updateStats(opponent, result)` using localStorage <!-- id: 61 -->
+    - [ ] **Client**: Add "Stats" button to Lobby <!-- id: 62 -->
+    - [ ] **Client**: Create Stats Modal UI (Totals + Per Opponent list) <!-- id: 63 -->
+    - [ ] **Client**: Hook up `updateStats` to game over events <!-- id: 64 -->
 
 - [ ] **Polishing & Verification**
     - [ ] Polish UI (CSS variables, responsive layout) <!-- id: 16 -->

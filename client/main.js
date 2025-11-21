@@ -115,9 +115,14 @@ socket.on('room_joined', ({ roomCode }) => {
     enterGame(roomCode);
 });
 
-socket.on('player_joined', ({ players }) => {
-    console.log('Players updated:', players);
-    // TODO: Update player list UI
+socket.on('player_joined', ({ username }) => {
+    console.log('Player joined:', username);
+
+    // Store opponent name for stats (the joining player is the opponent for room creator)
+    if (game && username && username !== usernameInput.value.trim()) {
+        game.opponentName = username;
+        console.log('Opponent name set to:', game.opponentName);
+    }
 });
 
 socket.on('game_start', ({ numbers, currentTurn }) => {
@@ -160,6 +165,21 @@ socket.on('game_sync', ({ roomCode, numbers, lines, currentNumber, currentTurn, 
         game.opponentName = opponent ? opponent.username : 'Oponente';
     } else {
         game.opponentName = 'Oponente';
+    }
+
+    // Update Local Stats
+    if (isGameOver && winner) {
+        const isWin = winner === sessionToken;
+        updateStats(game.opponentName, isWin, roomCode);
+    }
+});
+
+// Update stats when game ends in real-time
+socket.on('game_over', ({ reason, loser, winner }) => {
+    if (game && game.roomCode) {
+        const isWin = winner === sessionToken;
+        const opponentName = game.opponentName || 'Oponente';
+        updateStats(opponentName, isWin, game.roomCode);
     }
 });
 
@@ -343,3 +363,100 @@ function enterGame(roomCode, opponentName = null) {
         if (game) game.resizeCanvas();
     }, 100);
 }
+
+// --- Local Statistics ---
+
+function loadStats() {
+    const stored = localStorage.getItem('papa_online_stats');
+    if (stored) {
+        return JSON.parse(stored);
+    }
+    return {
+        totalWins: 0,
+        totalLosses: 0,
+        opponents: {}, // { "Name": { wins: 0, losses: 0 } }
+        processedGames: [] // List of roomCodes
+    };
+}
+
+function saveStats(stats) {
+    localStorage.setItem('papa_online_stats', JSON.stringify(stats));
+}
+
+function updateStats(opponentName, isWin, roomCode) {
+    const stats = loadStats();
+
+    // Prevent double counting
+    if (stats.processedGames.includes(roomCode)) {
+        return;
+    }
+
+    stats.processedGames.push(roomCode);
+
+    // Update Totals
+    if (isWin) {
+        stats.totalWins++;
+    } else {
+        stats.totalLosses++;
+    }
+
+    // Update Opponent Stats
+    if (!opponentName) opponentName = "Desconocido";
+
+    if (!stats.opponents[opponentName]) {
+        stats.opponents[opponentName] = { wins: 0, losses: 0 };
+    }
+
+    if (isWin) {
+        stats.opponents[opponentName].wins++;
+    } else {
+        stats.opponents[opponentName].losses++;
+    }
+
+    saveStats(stats);
+    console.log("Stats updated:", stats);
+}
+
+function showStats() {
+    const stats = loadStats();
+    const statsScreen = document.getElementById('stats-screen');
+    const list = document.getElementById('stats-list');
+
+    document.getElementById('total-wins').innerText = stats.totalWins;
+    document.getElementById('total-losses').innerText = stats.totalLosses;
+
+    list.innerHTML = '';
+
+    // Sort opponents by total games played
+    const sortedOpponents = Object.entries(stats.opponents).sort((a, b) => {
+        const totalA = a[1].wins + a[1].losses;
+        const totalB = b[1].wins + b[1].losses;
+        return totalB - totalA;
+    });
+
+    if (sortedOpponents.length === 0) {
+        list.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">Aún no hay estadísticas.</div>';
+    } else {
+        sortedOpponents.forEach(([name, data]) => {
+            const item = document.createElement('div');
+            item.className = 'stats-item';
+            item.innerHTML = `
+                <span class="stats-name">${name}</span>
+                <span class="stats-score">
+                    <span style="color: #4caf50;">${data.wins} 🏆</span> - 
+                    <span style="color: #f44336;">${data.losses} 💔</span>
+                </span>
+            `;
+            list.appendChild(item);
+        });
+    }
+
+    lobbyScreen.classList.add('hidden');
+    statsScreen.classList.remove('hidden');
+}
+
+document.getElementById('stats-btn').addEventListener('click', showStats);
+document.getElementById('close-stats-btn').addEventListener('click', () => {
+    document.getElementById('stats-screen').classList.add('hidden');
+    lobbyScreen.classList.remove('hidden');
+});

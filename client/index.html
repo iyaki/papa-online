@@ -20,9 +20,10 @@
                 <input type="text" id="username-input" placeholder="Tu Nombre" maxlength="10">
                 <button id="create-room-btn" class="primary-btn">Crear Sala</button>
                 <div class="join-room">
-                    <input type="text" id="room-code-input" placeholder="Código de Sala">
-                    <button id="join-room-btn" class="secondary-btn">Unirse</button>
+                    <input type="text" id="room-code-input" placeholder="Código de Sala" maxlength="6">
+                    <button id="join-room-btn" class="secondary-btn">Unirse a Sala</button>
                 </div>
+                <button id="stats-btn" class="secondary-btn" style="margin-top: 10px;">📊 Estadísticas</button>
 
                 <div id="my-games-container"
                     style="width: 100%; border-top: 2px dashed var(--text-color); padding-top: 1rem;">
@@ -78,6 +79,24 @@
                 <button id="restart-btn" class="primary-btn">Volver al Lobby</button>
                 <button id="export-btn" class="primary-btn" style="margin-top: 10px;">📸 Guardar Recuerdo</button>
             </div>
+        </div>
+
+        <div id="stats-screen" class="hidden">
+            <h2>Estadísticas</h2>
+            <div id="stats-summary" style="display: flex; justify-content: space-around; margin-bottom: 20px;">
+                <div style="text-align: center;">
+                    <div style="font-size: 2em; color: #4caf50;" id="total-wins">0</div>
+                    <div>Victorias</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 2em; color: #f44336;" id="total-losses">0</div>
+                    <div>Derrotas</div>
+                </div>
+            </div>
+            <div id="stats-list" style="max-height: 60vh; overflow-y: auto; text-align: left; margin-bottom: 20px;">
+                <!-- Items will be injected here -->
+            </div>
+            <button id="close-stats-btn" class="primary-btn">Volver al Lobby</button>
         </div>
     </div>
 
