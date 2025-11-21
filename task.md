@@ -29,6 +29,7 @@
     - [x] Client: Generate/Store Session Token (UUID) <!-- id: 26 -->
     - [x] Server: Authenticate socket with Token and handle Reconnection <!-- id: 27 -->
     - [x] Client: Handle `game_sync` to restore state <!-- id: 28 -->
+    - [x] Fix UUID generation for non-secure contexts <!-- id: 42 -->
 
 - [x] **New Features**
     - [x] Implement "Surrender" button <!-- id: 29 -->
@@ -43,6 +44,7 @@
     - [x] Implement Room logic (Create/Join) <!-- id: 13 -->
     - [x] Implement Turn-based sync (Send complete move -> Update all clients) <!-- id: 14 -->
     - [x] Handle player disconnects <!-- id: 15 -->
+    - [x] Fix CORS for remote access <!-- id: 43 -->
 
 - [x] **UI Redesign: Nostalgic Paper Theme**
     - [x] Add Google Font (Handwritten style) <!-- id: 32 -->
@@ -50,13 +52,19 @@
     - [x] Style buttons and inputs to match "sketch/notebook" theme <!-- id: 34 -->
     - [x] Update Canvas rendering to look like pencil/pen <!-- id: 35 -->
 
-- [ ] **Multi-Game Management**
-    - [ ] **Server**: Update `playerSessions` to store list of rooms (`rooms: []`) <!-- id: 36 -->
-    - [ ] **Server**: Update `join`/`create` to append to room list <!-- id: 37 -->
-    - [ ] **Server**: Implement `get_my_games` event to return active games list with status <!-- id: 38 -->
-    - [ ] **Client**: Create "My Games" list UI in Lobby <!-- id: 39 -->
-    - [ ] **Client**: Handle switching between games (minimize current, open selected) <!-- id: 40 -->
-    - [ ] **Client**: Add "Back to Menu" button in Game Screen <!-- id: 41 -->
+- [x] **Multi-Game Management**
+    - [x] **Server**: Update `playerSessions` to store list of rooms (`rooms: []`) <!-- id: 36 -->
+    - [x] **Server**: Update `join`/`create` to append to room list <!-- id: 37 -->
+    - [x] **Server**: Implement `get_my_games` event to return active games list with status <!-- id: 38 -->
+    - [x] **Client**: Create "My Games" list UI in Lobby <!-- id: 39 -->
+    - [x] **Client**: Handle switching between games (minimize current, open selected) <!-- id: 40 -->
+    - [x] **Client**: Add "Back to Menu" button in Game Screen <!-- id: 41 -->
+
+- [ ] **Mobile UI Optimization**
+    - [ ] **CSS**: Refactor `style.css` for mobile-first layout (flex-col, full width) <!-- id: 44 -->
+    - [ ] **CSS**: Optimize Lobby (large inputs/buttons, stacked layout) <!-- id: 45 -->
+    - [ ] **CSS**: Optimize Game Screen (compact info bar, max-width canvas) <!-- id: 46 -->
+    - [ ] **JS**: Ensure touch events work smoothly on canvas (prevent scrolling while drawing) <!-- id: 47 -->
 
 - [ ] **Polishing & Verification**
     - [ ] Polish UI (CSS variables, responsive layout) <!-- id: 16 -->

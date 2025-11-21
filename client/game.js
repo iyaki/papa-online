@@ -34,12 +34,12 @@ export class Game {
             e.preventDefault();
             const touch = e.touches[0];
             this.handleMouseDown({ clientX: touch.clientX, clientY: touch.clientY });
-        });
+        }, { passive: false });
         this.canvas.addEventListener('touchmove', (e) => {
             e.preventDefault();
             const touch = e.touches[0];
             this.handleMouseMove({ clientX: touch.clientX, clientY: touch.clientY });
-        });
+        }, { passive: false });
         window.addEventListener('touchend', (e) => {
             this.handleMouseUp();
         });
@@ -92,9 +92,9 @@ export class Game {
     }
 
     resizeCanvas() {
-        // Set fixed internal resolution to match server's game world
-        this.canvas.width = 800;
-        this.canvas.height = 600;
+        // Set fixed internal resolution to match server's game world (Portrait)
+        this.canvas.width = 600;
+        this.canvas.height = 800;
         this.draw();
     }
 

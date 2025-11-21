@@ -180,7 +180,7 @@ io.on('connection', (socket) => {
 
                 // Start Game if 2 players
                 if (room.players.length === 2) {
-                    room.numbers = generateNumbers(20, 800, 600);
+                    room.numbers = generateNumbers(20, 600, 800); // Portrait mode for mobile
                     room.currentTurn = room.players[0].id;
                     io.to(roomCode).emit('game_start', {
                         numbers: room.numbers,

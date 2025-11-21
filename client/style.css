@@ -34,14 +34,16 @@ body {
 
 .screen {
     width: 100%;
-    max-width: 800px;
     height: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    padding: 20px;
+    justify-content: flex-start;
+    /* Top alignment for mobile */
+    padding: 10px;
     position: relative;
+    overflow-y: auto;
+    /* Allow scrolling if content overflows */
 }
 
 .hidden {
@@ -50,24 +52,25 @@ body {
 
 /* Lobby Styles */
 h1 {
-    font-size: 3rem;
-    margin-bottom: 2rem;
+    font-size: 2.5rem;
+    margin: 1rem 0 2rem 0;
     text-align: center;
     text-decoration: underline wavy var(--accent-color);
 }
 
 .lobby-controls {
     background: rgba(255, 255, 255, 0.8);
-    padding: 2rem;
+    padding: 1.5rem;
     border: 2px solid var(--text-color);
     border-radius: 5px;
     /* Slightly rounded, hand-drawn feel? */
     box-shadow: 5px 5px 0px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 1rem;
     width: 100%;
-    max-width: 400px;
+    max-width: 500px;
+    /* Cap width on tablets */
 }
 
 .input-group {
@@ -82,7 +85,8 @@ label {
 }
 
 input {
-    padding: 10px;
+    padding: 15px;
+    /* Larger touch target */
     font-size: 1.2rem;
     background: transparent;
     border: none;
@@ -90,6 +94,7 @@ input {
     color: var(--text-color);
     outline: none;
     transition: border-color 0.3s;
+    width: 100%;
 }
 
 input:focus {
@@ -98,12 +103,15 @@ input:focus {
 
 .btn-group {
     display: flex;
+    flex-direction: column;
+    /* Stack buttons */
     gap: 1rem;
     justify-content: center;
 }
 
 button {
-    padding: 10px 20px;
+    padding: 15px 20px;
+    /* Larger touch target */
     font-size: 1.2rem;
     cursor: pointer;
     background: transparent;
@@ -112,15 +120,18 @@ button {
     border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
     /* Sketchy border */
     transition: transform 0.1s, background 0.2s;
+    width: 100%;
+    /* Full width */
 }
 
 button:hover {
-    transform: scale(1.05) rotate(-1deg);
+    transform: scale(1.02) rotate(-1deg);
+    /* Subtle scale */
     background: rgba(0, 0, 0, 0.05);
 }
 
 button:active {
-    transform: scale(0.95);
+    transform: scale(0.98);
 }
 
 .primary-btn {
@@ -133,7 +144,7 @@ button:active {
 
 .primary-btn:hover {
     background-color: #535bf2;
-    transform: scale(1.05) rotate(-1deg);
+    transform: scale(1.02) rotate(-1deg);
 }
 
 .secondary-btn {
@@ -144,35 +155,51 @@ button:active {
 
 .secondary-btn:hover {
     background-color: #d0d0d0;
-    transform: scale(1.05) rotate(1deg);
+    transform: scale(1.02) rotate(1deg);
+}
+
+.join-room {
+    display: flex;
+    flex-direction: column;
+    /* Stack inputs and buttons */
+    gap: 1rem;
+    width: 100%;
 }
 
 /* Game Screen */
 #game-info {
     width: 100%;
     display: flex;
+    flex-wrap: wrap;
+    /* Allow wrapping */
     justify-content: space-between;
     align-items: center;
-    padding: 10px 20px;
+    padding: 10px;
     background: rgba(255, 255, 255, 0.9);
     border-bottom: 2px solid var(--text-color);
     margin-bottom: 10px;
-    font-size: 1.5rem;
+    font-size: 1.1rem;
+    /* Slightly smaller font to fit */
+    gap: 10px;
 }
 
 #turn-indicator,
 #next-number,
 #room-info {
-    flex: 1;
+    flex: 1 1 auto;
+    /* Flex grow/shrink */
     text-align: center;
+    white-space: nowrap;
 }
 
 .canvas-container {
     flex-grow: 1;
     width: 100%;
     max-width: 100%;
-    aspect-ratio: 800/600;
-    /* Maintain game aspect ratio */
+    aspect-ratio: 600/800;
+    /* Portrait aspect ratio */
+    max-height: 75vh;
+    /* Don't take full height */
     position: relative;
     background: rgba(255, 255, 255, 0.5);
     /* Slight white tint to distinguish from bg */
@@ -186,12 +213,15 @@ button:active {
     margin: 0 auto;
     /* Center it */
     box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.1);
+    touch-action: none;
+    /* Prevent scrolling while drawing */
 }
 
 canvas {
     display: block;
     width: 100%;
     height: 100%;
+    touch-action: none;
 }
 
 /* Game Over Modal */
@@ -216,19 +246,20 @@ canvas {
 
 .modal-content {
     background: white;
-    padding: 3rem;
+    padding: 2rem;
     border: 3px solid var(--text-color);
     border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
     /* Sketchy border */
     text-align: center;
     box-shadow: 10px 10px 0px rgba(0, 0, 0, 0.1);
     max-width: 90%;
-    width: 400px;
+    width: 100%;
+    /* Full width on mobile */
 }
 
 #game-over-message {
-    font-size: 2.5rem;
-    margin-bottom: 2rem;
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
     color: var(--accent-color);
     font-weight: bold;
 }
