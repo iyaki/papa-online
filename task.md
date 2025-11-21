@@ -60,11 +60,18 @@
     - [x] **Client**: Handle switching between games (minimize current, open selected) <!-- id: 40 -->
     - [x] **Client**: Add "Back to Menu" button in Game Screen <!-- id: 41 -->
 
-- [ ] **Mobile UI Optimization**
-    - [ ] **CSS**: Refactor `style.css` for mobile-first layout (flex-col, full width) <!-- id: 44 -->
-    - [ ] **CSS**: Optimize Lobby (large inputs/buttons, stacked layout) <!-- id: 45 -->
-    - [ ] **CSS**: Optimize Game Screen (compact info bar, max-width canvas) <!-- id: 46 -->
-    - [ ] **JS**: Ensure touch events work smoothly on canvas (prevent scrolling while drawing) <!-- id: 47 -->
+- [x] **Mobile UI Optimization**
+    - [x] **CSS**: Refactor `style.css` for mobile-first layout (flex-col, full width) <!-- id: 44 -->
+    - [x] **CSS**: Optimize Lobby (large inputs/buttons, stacked layout) <!-- id: 45 -->
+    - [x] **CSS**: Optimize Game Screen (compact info bar, max-width canvas) <!-- id: 46 -->
+    - [x] **JS**: Ensure touch events work smoothly on canvas (prevent scrolling while drawing) <!-- id: 47 -->
+    - [x] **Res**: Switch to Portrait resolution (600x800) <!-- id: 48 -->
+
+- [ ] **Shareable Game Links**
+    - [ ] **Client**: Add "Share" button in Game Screen (copies URL with `?room=CODE`) <!-- id: 49 -->
+    - [ ] **Client**: Handle `?room=CODE` on page load <!-- id: 50 -->
+    - [ ] **Client**: If session exists, auto-join room <!-- id: 51 -->
+    - [ ] **Client**: If no session, pre-fill room code and focus username input <!-- id: 52 -->
 
 - [ ] **Polishing & Verification**
     - [ ] Polish UI (CSS variables, responsive layout) <!-- id: 16 -->

@@ -1,32 +1,34 @@
-# Implementation Plan - Juego de la Papa Online (Mobile Optimization)
+# Implementation Plan - Juego de la Papa Online (Shareable Links)
 
 ## Goal Description
-Optimize the user interface for mobile devices, prioritizing usability on small touch screens over desktop layouts.
+Allow players to invite others by sharing a direct link to the room.
 
 ## Proposed Changes
 
 ### Frontend (Client)
-#### [MODIFY] [style.css](file:///home/iyaki/Proyectos/iyaki/papa-online/client/style.css)
-- **Global**:
-    - Remove fixed widths (`max-width: 800px` -> `width: 100%`, `padding: 10px`).
-    - Increase base font size for readability.
-- **Lobby**:
-    - Stack controls vertically.
-    - Inputs and Buttons: `width: 100%`, `padding: 15px` (larger touch targets).
-    - "My Games" list: Card style, full width, easy to tap.
-- **Game Screen**:
-    - **Info Bar**: Make it compact. Maybe 2 rows: [Menu | Room] and [Turn | Next].
-    - **Canvas**: Ensure `width: 100%`. Maintain aspect ratio but ensure it fits within the viewport height if possible (or allow scrolling if necessary, but drawing while scrolling is bad).
-    - **Prevent Scrolling**: Add `touch-action: none` to canvas to prevent page scrolling while drawing.
+#### [MODIFY] [index.html](file:///home/iyaki/Proyectos/iyaki/papa-online/client/index.html)
+- Add a "Share" button (icon or text) near the room code display in `#game-info`.
 
-#### [MODIFY] [game.js](file:///home/iyaki/Proyectos/iyaki/papa-online/client/game.js)
-- Verify `touchstart`, `touchmove`, `touchend` handlers.
-- Ensure `e.preventDefault()` is called to stop scrolling.
+#### [MODIFY] [main.js](file:///home/iyaki/Proyectos/iyaki/papa-online/client/main.js)
+- **On Load**:
+    - Check `window.location.search` for `room`.
+    - If found:
+        - Check if `username` is in localStorage.
+        - **If Yes**: Emit `join_room` immediately.
+        - **If No**:
+            - Pre-fill `#room-code-input`.
+            - Focus `#username-input`.
+            - Optionally show a toast/message: "Ingresa tu nombre para unirte a la sala X".
+- **Share Button**:
+    - On click, construct URL: `${window.location.origin}/?room=${roomCode}`.
+    - Use `navigator.clipboard.writeText()` to copy.
+    - Show a temporary "Copied!" feedback.
 
 ## Verification Plan
 ### Manual Verification
-1.  Open game on mobile device (or browser dev tools mobile mode).
-2.  Verify Lobby layout is stacked and easy to use.
-3.  Verify Game Screen fits width.
-4.  Test drawing: Ensure page doesn't scroll when dragging on canvas.
-5.  Test "My Games" list scrolling and tapping.
+1.  Create a room. Click "Share".
+2.  Paste link in a new private window (simulating new user).
+3.  Verify it asks for username with room code filled.
+4.  Enter name -> Verify it joins correctly.
+5.  Paste link in a window with existing session.
+6.  Verify it auto-joins.

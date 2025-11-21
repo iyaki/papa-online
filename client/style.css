@@ -158,6 +158,28 @@ button:active {
     transform: scale(1.02) rotate(1deg);
 }
 
+.icon-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    color: var(--text-color);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s, color 0.2s;
+    width: auto;
+    /* Override full width */
+    border-radius: 50%;
+    /* Circular touch target */
+}
+
+.icon-btn:hover {
+    transform: scale(1.2);
+    color: var(--accent-color);
+    background: rgba(0, 0, 0, 0.05);
+}
+
 .join-room {
     display: flex;
     flex-direction: column;

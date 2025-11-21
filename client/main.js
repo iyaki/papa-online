@@ -10,6 +10,40 @@ const joinRoomBtn = document.getElementById('join-room-btn');
 const usernameInput = document.getElementById('username-input');
 const roomCodeInput = document.getElementById('room-code-input');
 const roomCodeDisplay = document.getElementById('room-code-display');
+const shareBtn = document.getElementById('share-btn');
+
+// ... (existing code)
+
+// Share Button Logic
+shareBtn.addEventListener('click', async () => {
+    const roomCode = roomCodeDisplay.innerText;
+    if (!roomCode) return;
+
+    const shareData = {
+        title: 'Juego de la Papa Online',
+        text: `¡Únete a mi partida! Código: ${roomCode}`,
+        url: `${window.location.origin}/?room=${roomCode}`
+    };
+
+    if (navigator.share) {
+        try {
+            await navigator.share(shareData);
+        } catch (err) {
+            console.log('Error sharing:', err);
+        }
+    } else {
+        // Fallback to clipboard
+        navigator.clipboard.writeText(shareData.url).then(() => {
+            const originalText = shareBtn.innerText;
+            shareBtn.innerText = "¡Copiado!";
+            setTimeout(() => shareBtn.innerText = originalText, 2000);
+        }).catch(err => {
+            console.error('Error copying link:', err);
+        });
+    }
+});
+
+
 
 // Helper for UUID generation (fallback for non-secure contexts)
 function generateUUID() {
@@ -35,6 +69,29 @@ const socket = io({
         token: sessionToken
     }
 });
+
+// Check for Room in URL (Auto-join / Pre-fill)
+const urlParams = new URLSearchParams(window.location.search);
+const roomFromUrl = urlParams.get('room');
+
+if (roomFromUrl) {
+    console.log('Room found in URL:', roomFromUrl);
+    roomCodeInput.value = roomFromUrl;
+
+    // Check if we have a username
+    const savedUsername = localStorage.getItem('username');
+    if (savedUsername) {
+        usernameInput.value = savedUsername;
+        // Auto-join
+        console.log('Auto-joining room:', roomFromUrl);
+        socket.emit('join_room', { roomCode: roomFromUrl, username: savedUsername });
+    } else {
+        // Focus username input
+        usernameInput.focus();
+        // Optional: Show a message
+        alert(`Ingresa tu nombre para unirte a la sala ${roomFromUrl}`);
+    }
+}
 
 // Game Instance
 let game;
