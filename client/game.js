@@ -134,7 +134,7 @@ export class Game {
 
             // Check for collisions with the NEW segment
             if (this.checkCollisions(this.currentLine)) {
-                this.socket.emit('game_over', { roomCode: this.roomCode, reason: "Cruzó una línea" });
+                this.socket.emit('game_over', { roomCode: this.roomCode, reason: "Cruzó una línea", lastLine: this.currentLine });
                 this.gameOver("¡Cruzaste una línea! Perdiste.");
             }
 
@@ -153,7 +153,7 @@ export class Game {
             this.currentLine.push({ x: nextNum.x, y: nextNum.y });
 
             if (this.checkCollisions(this.currentLine)) {
-                this.socket.emit('game_over', { roomCode: this.roomCode, reason: "Cruzó una línea" });
+                this.socket.emit('game_over', { roomCode: this.roomCode, reason: "Cruzó una línea", lastLine: this.currentLine });
                 this.gameOver("¡Cruzaste una línea! Perdiste.");
             } else {
                 // Valid Move
@@ -322,10 +322,10 @@ export class Game {
         });
     }
 
-    exportToImage() {
+    exportToImage(playerText, resultText, resultColor, footerUrl) {
         const exportCanvas = document.createElement('canvas');
         exportCanvas.width = this.canvas.width;
-        exportCanvas.height = this.canvas.height + 100; // Extra space for footer
+        exportCanvas.height = this.canvas.height + 140; // Extra space for footer
         const ctx = exportCanvas.getContext('2d');
 
         // Background
@@ -343,17 +343,33 @@ export class Game {
         }
 
         // Draw Game Content
+        // Ensure we draw the exact pixels from the game canvas
         ctx.drawImage(this.canvas, 0, 0);
 
-        // Footer
-        ctx.fillStyle = '#333';
-        ctx.font = 'bold 24px "Gochi Hand", cursive, sans-serif';
+        // Footer Area
+        const footerY = this.canvas.height + 40;
         ctx.textAlign = 'center';
-        ctx.fillText('Juego de la Papa Online', exportCanvas.width / 2, this.canvas.height + 40);
 
-        ctx.font = '16px sans-serif';
-        ctx.fillText(`Fecha: ${new Date().toLocaleDateString()}`, exportCanvas.width / 2, this.canvas.height + 70);
+        // Player Names
+        ctx.fillStyle = '#333';
+        ctx.font = 'bold 28px "Gochi Hand", cursive, sans-serif';
+        ctx.fillText(playerText || 'Juego de la Papa', exportCanvas.width / 2, footerY);
+
+        // Result
+        if (resultText) {
+            ctx.fillStyle = resultColor || '#333';
+            ctx.font = 'bold 36px "Gochi Hand", cursive, sans-serif';
+            ctx.fillText(resultText, exportCanvas.width / 2, footerY + 40);
+        }
+
+        // URL
+        if (footerUrl) {
+            ctx.fillStyle = '#7f8c8d';
+            ctx.font = '14px sans-serif';
+            ctx.fillText(footerUrl, exportCanvas.width / 2, exportCanvas.height - 15);
+        }
 
         return exportCanvas.toDataURL('image/png');
     }
 }
+

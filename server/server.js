@@ -209,7 +209,8 @@ io.on('connection', (socket) => {
                 currentTurn: room.currentTurn,
                 isGameOver: !!room.winner,
                 winner: room.winner,
-                loser: room.loser
+                loser: room.loser,
+                players: room.players.map(p => ({ username: p.username, token: p.token }))
             });
         }
     });
@@ -239,9 +240,14 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('game_over', ({ roomCode, reason }) => {
+    socket.on('game_over', ({ roomCode, reason, lastLine }) => {
         const room = rooms[roomCode];
         if (room) {
+            // Save the losing line if provided
+            if (lastLine) {
+                room.lines.push(lastLine);
+            }
+
             // Find loser (current socket)
             const loserPlayer = room.players.find(p => p.id === socket.id);
             room.loser = loserPlayer ? loserPlayer.token : 'unknown';

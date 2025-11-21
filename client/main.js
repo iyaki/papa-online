@@ -128,7 +128,7 @@ socket.on('game_start', ({ numbers, currentTurn }) => {
 });
 
 // Reconnection / Sync Event
-socket.on('game_sync', ({ roomCode, numbers, lines, currentNumber, currentTurn, isGameOver }) => {
+socket.on('game_sync', ({ roomCode, numbers, lines, currentNumber, currentTurn, isGameOver, winner, loser, players }) => {
     console.log("Reconnected to game:", roomCode);
 
     // Restore UI
@@ -148,7 +148,19 @@ socket.on('game_sync', ({ roomCode, numbers, lines, currentNumber, currentTurn, 
     }
 
     // Restore Game State
+    // Restore Game State
     game.syncState(numbers, lines, currentNumber, currentTurn, isGameOver);
+
+    // Store metadata for export
+    game.winner = winner;
+    game.loser = loser;
+
+    if (players && players.length > 0) {
+        const opponent = players.find(p => p.token !== sessionToken);
+        game.opponentName = opponent ? opponent.username : 'Oponente';
+    } else {
+        game.opponentName = 'Oponente';
+    }
 });
 
 socket.on('error', ({ message }) => {
@@ -173,7 +185,27 @@ const exportBtn = document.getElementById('export-btn');
 
 exportBtn.addEventListener('click', () => {
     if (game) {
-        const dataUrl = game.exportToImage();
+        // Calculate Metadata
+        const myName = usernameInput.value.trim() || 'Yo';
+        const opponentName = game.opponentName || 'Oponente';
+        const playerText = `${myName} vs ${opponentName}`;
+
+        let resultText = 'Juego Terminado';
+        let resultColor = '#333';
+
+        if (game.winner) {
+            if (game.winner === sessionToken) {
+                resultText = '¡GANASTE!';
+                resultColor = '#27ae60'; // Green
+            } else {
+                resultText = 'PERDISTE';
+                resultColor = '#c0392b'; // Red
+            }
+        }
+
+        const footerUrl = window.location.href;
+
+        const dataUrl = game.exportToImage(playerText, resultText, resultColor, footerUrl);
         const link = document.createElement('a');
         link.download = `juego-papa-${new Date().toISOString().split('T')[0]}.png`;
         link.href = dataUrl;
@@ -261,7 +293,7 @@ socket.on('my_games_list', (games) => {
         `;
 
         div.addEventListener('click', () => {
-            enterGame(g.roomCode);
+            enterGame(g.roomCode, g.opponentName);
         });
 
         myGamesList.appendChild(div);
@@ -280,7 +312,7 @@ backToMenuBtn.addEventListener('click', () => {
     socket.emit('get_my_games'); // Refresh list
 });
 
-function enterGame(roomCode) {
+function enterGame(roomCode, opponentName = null) {
     lobbyScreen.classList.add('hidden');
     gameScreen.classList.remove('hidden');
     roomCodeDisplay.innerText = roomCode;
@@ -301,6 +333,10 @@ function enterGame(roomCode) {
         game.lines = []; // Clear previous game data
         game.numbers = [];
         requestAnimationFrame(() => game.resizeCanvas());
+    }
+
+    if (opponentName) {
+        game.opponentName = opponentName;
     }
 
     setTimeout(() => {
