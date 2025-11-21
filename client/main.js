@@ -93,6 +93,38 @@ if (roomFromUrl) {
     }
 }
 
+// Request notification permission on page load
+if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission();
+}
+
+// Helper to check if page is visible
+function isPageVisible() {
+    return !document.hidden;
+}
+
+// Helper to send notification
+function sendNotification(title, body) {
+    if ('Notification' in window && Notification.permission === 'granted' && !isPageVisible()) {
+        const notification = new Notification(title, {
+            body: body,
+            icon: '/favicon.ico', // You can add a custom icon
+            badge: '/favicon.ico',
+            tag: 'turn-notification', // Replaces previous notification
+            requireInteraction: false
+        });
+
+        // Auto-close after 5 seconds
+        setTimeout(() => notification.close(), 5000);
+
+        // Focus window when notification is clicked
+        notification.onclick = () => {
+            window.focus();
+            notification.close();
+        };
+    }
+}
+
 // Game Instance
 let game;
 
@@ -129,6 +161,15 @@ socket.on('game_start', ({ numbers, currentTurn }) => {
     console.log('Game Starting!', numbers);
     if (game) {
         game.startGame(numbers, currentTurn);
+    }
+});
+
+// Listen for move_made to send notifications
+socket.on('move_made', ({ line, nextNumber, currentTurn }) => {
+    // Check if it's now my turn and send notification
+    if (game && currentTurn === game.myPlayerId) {
+        const opponentName = game.opponentName || 'Tu oponente';
+        sendNotification('Papa Online - ¡Es tu turno!', `${opponentName} hizo su jugada. Ahora te toca a ti.`);
     }
 });
 
