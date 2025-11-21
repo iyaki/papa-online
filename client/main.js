@@ -11,10 +11,21 @@ const usernameInput = document.getElementById('username-input');
 const roomCodeInput = document.getElementById('room-code-input');
 const roomCodeDisplay = document.getElementById('room-code-display');
 
+// Helper for UUID generation (fallback for non-secure contexts)
+function generateUUID() {
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+        return crypto.randomUUID();
+    }
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
+
 // Session Management
 let sessionToken = localStorage.getItem('session_token');
 if (!sessionToken) {
-    sessionToken = crypto.randomUUID();
+    sessionToken = generateUUID();
     localStorage.setItem('session_token', sessionToken);
 }
 
@@ -139,6 +150,58 @@ joinRoomBtn.addEventListener('click', () => {
     enterGame(roomCode); // Optimistic entry, server will error if failed
 });
 
+const backToMenuBtn = document.getElementById('back-to-menu-btn');
+const myGamesList = document.getElementById('my-games-list');
+
+// Multi-game Events
+socket.on('my_games_list', (games) => {
+    myGamesList.innerHTML = '';
+    if (games.length === 0) {
+        myGamesList.innerHTML = '<p style="opacity: 0.6;">No tienes partidas activas.</p>';
+        return;
+    }
+
+    games.forEach(g => {
+        const div = document.createElement('div');
+        div.className = 'game-item';
+        div.style.cssText = `
+            background: rgba(255,255,255,0.5); 
+            padding: 10px; 
+            border: 1px solid var(--text-color); 
+            border-radius: 5px; 
+            cursor: pointer; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+        `;
+
+        const status = g.isMyTurn ? '<span style="color: var(--accent-color); font-weight: bold;">¡Tu Turno!</span>' : 'Esperando...';
+
+        div.innerHTML = `
+            <span>Sala: <b>${g.roomCode}</b> vs ${g.opponentName}</span>
+            ${status}
+        `;
+
+        div.addEventListener('click', () => {
+            enterGame(g.roomCode);
+        });
+
+        myGamesList.appendChild(div);
+    });
+});
+
+socket.on('my_games_update', () => {
+    socket.emit('get_my_games');
+});
+
+backToMenuBtn.addEventListener('click', () => {
+    gameScreen.classList.add('hidden');
+    lobbyScreen.classList.remove('hidden');
+    game = null; // Clear current game instance to avoid conflicts? Or keep it? 
+    // Better to clear it or pause it.
+    socket.emit('get_my_games'); // Refresh list
+});
+
 function enterGame(roomCode) {
     lobbyScreen.classList.add('hidden');
     gameScreen.classList.remove('hidden');
@@ -147,6 +210,22 @@ function enterGame(roomCode) {
     const canvas = document.getElementById('game-canvas');
     const username = usernameInput.value.trim();
 
-    // Initialize Game with Socket
-    game = new Game(canvas, username, roomCode, socket);
+    // Request full state for this game
+    socket.emit('request_game_sync', { roomCode });
+
+    // Initialize Game with Socket (Wait for sync to populate data)
+    if (!game) {
+        game = new Game(canvas, username, roomCode, socket);
+    } else {
+        game.roomCode = roomCode;
+        game.username = username;
+        game.socket = socket;
+        game.lines = []; // Clear previous game data
+        game.numbers = [];
+        requestAnimationFrame(() => game.resizeCanvas());
+    }
+
+    setTimeout(() => {
+        if (game) game.resizeCanvas();
+    }, 100);
 }

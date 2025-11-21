@@ -5,6 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Juego de la Papa Online</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -15,10 +18,19 @@
             <h1>Juego de la Papa</h1>
             <div class="lobby-controls">
                 <input type="text" id="username-input" placeholder="Tu Nombre" maxlength="10">
-                <button id="create-room-btn" class="btn primary">Crear Sala</button>
+                <button id="create-room-btn" class="primary-btn">Crear Sala</button>
                 <div class="join-room">
                     <input type="text" id="room-code-input" placeholder="Código de Sala">
-                    <button id="join-room-btn" class="btn secondary">Unirse</button>
+                    <button id="join-room-btn" class="secondary-btn">Unirse</button>
+                </div>
+
+                <div id="my-games-container"
+                    style="width: 100%; border-top: 2px dashed var(--text-color); padding-top: 1rem;">
+                    <h3>Mis Partidas</h3>
+                    <div id="my-games-list"
+                        style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
+                        <!-- Games will be injected here -->
+                    </div>
                 </div>
             </div>
         </div>
@@ -26,6 +38,8 @@
         <!-- Game Screen -->
         <div id="game-screen" class="screen hidden">
             <div id="game-info">
+                <button id="back-to-menu-btn" class="primary-btn"
+                    style="margin-right: 10px; font-size: 1rem; padding: 5px 10px;">Menú</button>
                 <div id="turn-indicator">
                     <span id="current-player-display">Esperando...</span>
                 </div>
@@ -48,11 +62,10 @@
         </div>
 
         <!-- Game Over Screen -->
-        <div id="game-over-screen" class="screen hidden overlay">
-            <div class="modal">
-                <h2 id="game-over-title">¡Juego Terminado!</h2>
-                <p id="game-over-message"></p>
-                <button id="restart-btn" class="btn primary">Volver al Lobby</button>
+        <div id="game-over-screen" class="screen hidden">
+            <div class="modal-content">
+                <h2 id="game-over-message">Juego Terminado</h2>
+                <button id="restart-btn" class="primary-btn">Volver al Lobby</button>
             </div>
         </div>
     </div>

@@ -1,135 +1,236 @@
 :root {
-    --primary-color: #646cff;
-    --primary-hover: #535bf2;
-    --bg-color: #242424;
-    --text-color: rgba(255, 255, 255, 0.87);
-    --canvas-bg: #ffffff;
-    --error-color: #ff4646;
-    --success-color: #4caf50;
+    --bg-color: #fdfbf7;
+    --line-color: #aaccff;
+    /* Light blue grid lines */
+    --text-color: #2c3e50;
+    /* Dark blue/grey ink */
+    --primary-color: #2c3e50;
+    --accent-color: #d35400;
+    /* Burnt orange for highlights */
+    --font-main: 'Patrick Hand', cursive;
 }
 
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+    font-family: var(--font-main);
 }
 
 body {
-    font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-    line-height: 1.5;
-    font-weight: 400;
-    color: var(--text-color);
     background-color: var(--bg-color);
+    background-image:
+        linear-gradient(var(--line-color) 1px, transparent 1px),
+        linear-gradient(90deg, var(--line-color) 1px, transparent 1px);
+    background-size: 20px 20px;
+    /* Grid size */
+    color: var(--text-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
     height: 100vh;
     overflow: hidden;
 }
 
-#app {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
 .screen {
     width: 100%;
+    max-width: 800px;
     height: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    position: absolute;
-    top: 0;
-    left: 0;
-    transition: opacity 0.3s ease;
+    padding: 20px;
+    position: relative;
 }
 
 .hidden {
-    opacity: 0;
-    pointer-events: none;
-    z-index: -1;
+    display: none !important;
 }
 
 /* Lobby Styles */
+h1 {
+    font-size: 3rem;
+    margin-bottom: 2rem;
+    text-align: center;
+    text-decoration: underline wavy var(--accent-color);
+}
+
 .lobby-controls {
+    background: rgba(255, 255, 255, 0.8);
+    padding: 2rem;
+    border: 2px solid var(--text-color);
+    border-radius: 5px;
+    /* Slightly rounded, hand-drawn feel? */
+    box-shadow: 5px 5px 0px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
-    gap: 1rem;
-    margin-top: 2rem;
-    padding: 2rem;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 8px;
+    gap: 1.5rem;
+    width: 100%;
+    max-width: 400px;
 }
 
-input {
-    padding: 0.6em 1.2em;
-    border-radius: 4px;
-    border: 1px solid transparent;
-    background-color: #1a1a1a;
-    color: white;
-    font-size: 1em;
-}
-
-.join-room {
+.input-group {
     display: flex;
+    flex-direction: column;
     gap: 0.5rem;
 }
 
-/* Game Screen Styles */
-#game-screen {
-    justify-content: flex-start;
+label {
+    font-size: 1.2rem;
+    font-weight: bold;
 }
 
-.game-header {
+input {
+    padding: 10px;
+    font-size: 1.2rem;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid var(--text-color);
+    color: var(--text-color);
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+input:focus {
+    border-bottom-color: var(--accent-color);
+}
+
+.btn-group {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    background: transparent;
+    border: 2px solid var(--text-color);
+    color: var(--text-color);
+    border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+    /* Sketchy border */
+    transition: transform 0.1s, background 0.2s;
+}
+
+button:hover {
+    transform: scale(1.05) rotate(-1deg);
+    background: rgba(0, 0, 0, 0.05);
+}
+
+button:active {
+    transform: scale(0.95);
+}
+
+.primary-btn {
+    background-color: #646cff;
+    color: white;
+    border: none;
+    /* Remove border for solid look, or keep it? Let's remove to match "old" style more */
+    font-weight: bold;
+}
+
+.primary-btn:hover {
+    background-color: #535bf2;
+    transform: scale(1.05) rotate(-1deg);
+}
+
+.secondary-btn {
+    background-color: #e0e0e0;
+    color: #333;
+    border: none;
+}
+
+.secondary-btn:hover {
+    background-color: #d0d0d0;
+    transform: scale(1.05) rotate(1deg);
+}
+
+/* Game Screen */
+#game-info {
     width: 100%;
-    padding: 1rem;
     display: flex;
     justify-content: space-between;
-    background: rgba(0, 0, 0, 0.2);
+    align-items: center;
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.9);
+    border-bottom: 2px solid var(--text-color);
+    margin-bottom: 10px;
+    font-size: 1.5rem;
+}
+
+#turn-indicator,
+#next-number,
+#room-info {
+    flex: 1;
+    text-align: center;
 }
 
 .canvas-container {
     flex-grow: 1;
     width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 1rem;
+    max-width: 100%;
+    aspect-ratio: 800/600;
+    /* Maintain game aspect ratio */
+    position: relative;
+    background: rgba(255, 255, 255, 0.5);
+    /* Slight white tint to distinguish from bg */
+    border: 3px solid var(--text-color);
+    /* Visible border */
+    border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+    /* Sketchy border */
     overflow: hidden;
+    /* Clip canvas to the sketchy border */
+    cursor: crosshair;
+    margin: 0 auto;
+    /* Center it */
+    box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.1);
 }
 
 canvas {
-    background-color: var(--canvas-bg);
-    border-radius: 4px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    cursor: crosshair;
-    touch-action: none;
-    /* Prevent scrolling on touch */
+    display: block;
+    width: 100%;
+    height: 100%;
 }
 
-.game-footer {
-    padding: 0.5rem;
-    font-size: 0.8rem;
-    opacity: 0.7;
+/* Game Over Modal */
+#game-over-screen {
+    position: fixed;
+    /* Fixed to cover the entire viewport */
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(253, 251, 247, 0.95);
+    /* Paper color, high opacity */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    /* High z-index to be on top */
+    max-width: none;
+    /* Override .screen max-width */
 }
 
-/* Buttons */
-.btn {
-    border-radius: 8px;
-    border: 1px solid transparent;
-    padding: 0.8em 1.5em;
-    font-size: 1em;
-    font-weight: 600;
-    font-family: inherit;
-    cursor: pointer;
-    transition: all 0.25s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+.modal-content {
+    background: white;
+    padding: 3rem;
+    border: 3px solid var(--text-color);
+    border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+    /* Sketchy border */
+    text-align: center;
+    box-shadow: 10px 10px 0px rgba(0, 0, 0, 0.1);
+    max-width: 90%;
+    width: 400px;
 }
 
-.btn:active {
-    transform: translateY(1px);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+#game-over-message {
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+    color: var(--accent-color);
+    font-weight: bold;
 }
 
 .btn.primary {

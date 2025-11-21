@@ -57,8 +57,8 @@ export class Game {
             this.gameOver(msg);
         });
 
-        this.resizeCanvas();
-        this.draw(); // Draw empty or waiting state
+        // Delay initial resize to ensure DOM layout is applied
+        requestAnimationFrame(() => this.resizeCanvas());
     }
 
     startGame(numbers, currentTurn) {
@@ -92,17 +92,19 @@ export class Game {
     }
 
     resizeCanvas() {
-        const container = this.canvas.parentElement;
-        this.canvas.width = container.clientWidth;
-        this.canvas.height = container.clientHeight;
+        // Set fixed internal resolution to match server's game world
+        this.canvas.width = 800;
+        this.canvas.height = 600;
         this.draw();
     }
 
     getMousePos(e) {
         const rect = this.canvas.getBoundingClientRect();
+        const scaleX = this.canvas.width / rect.width;
+        const scaleY = this.canvas.height / rect.height;
         return {
-            x: e.clientX - rect.left,
-            y: e.clientY - rect.top
+            x: (e.clientX - rect.left) * scaleX,
+            y: (e.clientY - rect.top) * scaleY
         };
     }
 
@@ -251,7 +253,7 @@ export class Game {
         this.ctx.lineJoin = 'round';
 
         this.lines.forEach(path => {
-            this.ctx.strokeStyle = '#646cff';
+            this.ctx.strokeStyle = '#2c3e50'; // Dark ink color
             this.ctx.beginPath();
             if (path.length > 0) {
                 this.ctx.moveTo(path[0].x, path[0].y);
@@ -264,7 +266,7 @@ export class Game {
 
         // Draw Current Line (Path)
         if (this.currentLine && this.currentLine.length > 0) {
-            this.ctx.strokeStyle = '#ff4646';
+            this.ctx.strokeStyle = '#d35400'; // Burnt orange for current stroke (pencil/marker?)
             this.ctx.beginPath();
             this.ctx.moveTo(this.currentLine[0].x, this.currentLine[0].y);
             for (let i = 1; i < this.currentLine.length; i++) {
@@ -274,27 +276,49 @@ export class Game {
         }
 
         // Draw Numbers
-        this.ctx.font = 'bold 16px Arial';
+        this.ctx.font = 'bold 24px "Patrick Hand", cursive';
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
 
         this.numbers.forEach(num => {
+            // Draw circle background (paper cutout or drawn circle?)
+            // Let's make it look like a drawn circle
+            this.ctx.beginPath();
+            this.ctx.arc(num.x, num.y, 18, 0, Math.PI * 2);
+
             if (num.value === this.currentNumber) {
-                this.ctx.fillStyle = '#4caf50';
+                this.ctx.fillStyle = 'rgba(76, 175, 80, 0.2)'; // Light green highlight
+                this.ctx.fill();
+                this.ctx.strokeStyle = '#2c3e50';
+                this.ctx.lineWidth = 2;
+                this.ctx.stroke();
             } else if (num.value === this.currentNumber + 1) {
-                this.ctx.fillStyle = '#ff9800';
+                this.ctx.fillStyle = 'rgba(255, 152, 0, 0.2)'; // Light orange highlight
+                this.ctx.fill();
+                this.ctx.strokeStyle = '#2c3e50';
+                this.ctx.lineWidth = 2;
+                this.ctx.stroke();
             } else if (num.value < this.currentNumber) {
-                this.ctx.fillStyle = '#888';
+                // Completed numbers
+                this.ctx.fillStyle = 'rgba(200, 200, 200, 0.2)';
+                this.ctx.fill();
+                this.ctx.strokeStyle = '#95a5a6'; // Faded ink
+                this.ctx.lineWidth = 1;
+                this.ctx.stroke();
             } else {
-                this.ctx.fillStyle = '#333';
+                // Future numbers
+                this.ctx.strokeStyle = '#2c3e50';
+                this.ctx.lineWidth = 1;
+                this.ctx.stroke();
             }
 
-            this.ctx.beginPath();
-            this.ctx.arc(num.x, num.y, 15, 0, Math.PI * 2);
-            this.ctx.fill();
-
-            this.ctx.fillStyle = '#fff';
-            this.ctx.fillText(num.value, num.x, num.y);
+            // Text
+            if (num.value < this.currentNumber) {
+                this.ctx.fillStyle = '#95a5a6';
+            } else {
+                this.ctx.fillStyle = '#2c3e50';
+            }
+            this.ctx.fillText(num.value, num.x, num.y + 2); // +2 for visual centering with this font
         });
     }
 }

@@ -23,6 +23,7 @@
     - [x] Implement "Touch Number = Loss" rule <!-- id: 24 -->
     - [x] Fix "Back to Lobby" button functionality <!-- id: 25 -->
     - [x] Implement "Safe Zone" in start number (ignore collisions inside radius) <!-- id: 30 -->
+    - [x] Persist Username in LocalStorage <!-- id: 31 -->
 
 - [x] **Async Play & Reconnection**
     - [x] Client: Generate/Store Session Token (UUID) <!-- id: 26 -->
@@ -43,8 +44,21 @@
     - [x] Implement Turn-based sync (Send complete move -> Update all clients) <!-- id: 14 -->
     - [x] Handle player disconnects <!-- id: 15 -->
 
+- [x] **UI Redesign: Nostalgic Paper Theme**
+    - [x] Add Google Font (Handwritten style) <!-- id: 32 -->
+    - [x] Implement Grid Paper Background (CSS) <!-- id: 33 -->
+    - [x] Style buttons and inputs to match "sketch/notebook" theme <!-- id: 34 -->
+    - [x] Update Canvas rendering to look like pencil/pen <!-- id: 35 -->
+
+- [ ] **Multi-Game Management**
+    - [ ] **Server**: Update `playerSessions` to store list of rooms (`rooms: []`) <!-- id: 36 -->
+    - [ ] **Server**: Update `join`/`create` to append to room list <!-- id: 37 -->
+    - [ ] **Server**: Implement `get_my_games` event to return active games list with status <!-- id: 38 -->
+    - [ ] **Client**: Create "My Games" list UI in Lobby <!-- id: 39 -->
+    - [ ] **Client**: Handle switching between games (minimize current, open selected) <!-- id: 40 -->
+    - [ ] **Client**: Add "Back to Menu" button in Game Screen <!-- id: 41 -->
+
 - [ ] **Polishing & Verification**
-    - [ ] Persist Username in LocalStorage <!-- id: 31 -->
     - [ ] Polish UI (CSS variables, responsive layout) <!-- id: 16 -->
     - [ ] Verify responsive canvas (Mobile/Desktop) <!-- id: 17 -->
     - [ ] Manual Verification (Playtest) <!-- id: 18 -->
