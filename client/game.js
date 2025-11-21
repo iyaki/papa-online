@@ -1,12 +1,13 @@
 import { doPolylineIntersection } from './collision.js';
 
 export class Game {
-    constructor(canvas, username, roomCode, socket) {
+    constructor(canvas, username, roomCode, socket, token) {
         this.canvas = canvas;
         this.ctx = canvas.getContext('2d');
         this.username = username;
         this.roomCode = roomCode;
         this.socket = socket;
+        this.token = token;
 
         this.numbers = [];
         this.lines = []; // Array of arrays of points [{x,y}, {x,y}...]
@@ -53,7 +54,8 @@ export class Game {
         });
 
         this.socket.on('game_over', ({ reason, loser }) => {
-            const msg = loser === this.myPlayerId ? "¡Perdiste! " + reason : "¡Ganaste! El oponente perdió.";
+            console.log('Game Over Event:', { reason, loser, myToken: this.token });
+            const msg = loser === this.token ? "¡Perdiste! " + reason : "¡Ganaste! El oponente perdió.";
             this.gameOver(msg);
         });
 

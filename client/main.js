@@ -236,7 +236,7 @@ socket.on('game_sync', ({ roomCode, numbers, lines, currentNumber, currentTurn, 
 
     // Initialize Game if not already
     if (!game) {
-        game = new Game(canvas, username, roomCode, socket);
+        game = new Game(canvas, username, roomCode, socket, sessionToken);
     } else {
         game.roomCode = roomCode; // Update game room code
         game.username = username; // Update username if new game
@@ -428,7 +428,7 @@ function enterGame(roomCode, opponentName = null) {
 
     // Initialize Game with Socket (Wait for sync to populate data)
     if (!game) {
-        game = new Game(canvas, username, roomCode, socket);
+        game = new Game(canvas, username, roomCode, socket, sessionToken);
     } else {
         game.roomCode = roomCode;
         game.username = username;

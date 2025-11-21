@@ -293,6 +293,13 @@ io.on('connection', (socket) => {
             const winnerPlayer = room.players.find(p => p.id !== socket.id);
             room.winner = winnerPlayer ? winnerPlayer.token : 'unknown';
 
+            console.log('Game Over Server:', {
+                roomCode,
+                loserSocket: socket.id,
+                loserToken: room.loser,
+                winnerToken: room.winner
+            });
+
             io.to(roomCode).emit('game_over', { reason, loser: room.loser, winner: room.winner });
 
             // Notify for list update
