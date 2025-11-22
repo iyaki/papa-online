@@ -460,6 +460,19 @@ button:active {
     border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
 }
 
+.faq-content h3 {
+    margin-top: 15px;
+    margin-bottom: 5px;
+    color: var(--accent-color);
+    font-size: 1.2rem;
+}
+
+.faq-content p {
+    margin-bottom: 10px;
+    font-size: 1rem;
+    color: #555;
+}
+
 .stats-item:last-child {
     margin-bottom: 20px;
 }

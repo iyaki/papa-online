@@ -2,6 +2,21 @@ import { Game } from './game.js';
 
 console.log('Juego de la Papa Online - Initializing...');
 
+// FAQ Logic
+const faqBtn = document.getElementById('faq-btn');
+const faqScreen = document.getElementById('faq-screen');
+const closeFaqBtn = document.getElementById('close-faq-btn');
+
+faqBtn.addEventListener('click', () => {
+    console.log('FAQ Button Clicked');
+    faqScreen.classList.remove('hidden');
+});
+
+closeFaqBtn.addEventListener('click', () => {
+    console.log('Close FAQ Button Clicked');
+    faqScreen.classList.add('hidden');
+});
+
 // DOM Elements
 const lobbyScreen = document.getElementById('lobby-screen');
 const gameScreen = document.getElementById('game-screen');

@@ -33,6 +33,7 @@
                     <button id="join-room-btn" class="primary-btn">Unirse</button>
                 </div>
                 <button id="stats-btn" class="secondary-btn" style="margin-top: 10px;">📊 Estadísticas</button>
+                <button id="faq-btn" class="secondary-btn" style="margin-top: 10px;">❓ Ayuda / Reglas</button>
 
                 <div id="my-games-container"
                     style="width: 100%; border-top: 2px dashed var(--text-color); padding-top: 1rem;">
@@ -109,13 +110,11 @@
             </div>
         </div>
 
-        <div id="stats-screen" class="hidden">
-            <h2>Estadísticas</h2>
-            <div id="stats-summary" style="display: flex; justify-content: space-around; margin-bottom: 20px;">
-                <div style="text-align: center;">
-                    <div style="font-size: 2em; color: #4caf50;" id="total-wins">0</div>
-                    <div>Victorias</div>
-                </div>
+        <!-- Stats Screen -->
+        <div id="stats-screen" class="screen hidden"
+            style="background: var(--bg-color); z-index: 50; position: fixed; top: 0; left: 0;">
+            <div class="card" style="max-width: 500px; width: 95%;">
+                <h2>Estadísticas Locales</h2>
                 <div style="text-align: center;">
                     <div style="font-size: 2em; color: #f44336;" id="total-losses">0</div>
                     <div>Derrotas</div>
@@ -125,6 +124,34 @@
                 <!-- Items will be injected here -->
             </div>
             <button id="close-stats-btn" class="primary-btn">Volver al Lobby</button>
+        </div>
+
+        <!-- FAQ Screen -->
+        <div id="faq-screen" class="screen hidden"
+            style="background: var(--bg-color); z-index: 50; position: fixed; top: 0; left: 0;">
+            <div class="card" style="max-width: 500px; width: 95%; max-height: 90vh; overflow-y: auto;">
+                <h2>Reglas y Ayuda</h2>
+                <div class="faq-content" style="text-align: left; line-height: 1.6;">
+                    <h3>🥔 ¿De qué trata?</h3>
+                    <p>El objetivo es conectar los números en orden (1, 2, 3...) sin que las líneas se crucen.</p>
+
+                    <h3>🎮 ¿Cómo jugar?</h3>
+                    <p>1. Busca el número que sigue (empieza por el 1).</p>
+                    <p>2. Arrastra desde el último número conectado hasta el nuevo.</p>
+                    <p>3. ¡Cuidado! Si tocas tu propia línea o la del oponente, pierdes.</p>
+                    <p>4. Si te quedas sin camino posible, también pierdes.</p>
+
+                    <h3>🏆 ¿Quién gana?</h3>
+                    <p>Gana el último jugador que logre hacer un movimiento válido.</p>
+
+                    <h3>🐛 ¿Encontraste un error?</h3>
+                    <p>Si encuentras algún problema o error en el juego, por favor repórtalo a: <a
+                            href="mailto:contact@iyaki.ar"
+                            style="color: var(--accent-color); text-decoration: underline;">contact@iyaki.ar</a></p>
+                </div>
+                <button id="close-faq-btn" class="primary-btn"
+                    style="margin-top: 20px; margin-bottom: 20px; width: 95%;">Entendido</button>
+            </div>
         </div>
     </div>
 
