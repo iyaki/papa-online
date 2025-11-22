@@ -1,0 +1,11 @@
+{
+    "testEnvironment": "node",
+    "coverageDirectory": "./coverage",
+    "collectCoverageFrom": [
+        "server.js",
+        "!node_modules/**",
+        "!coverage/**"
+    ],
+    "testTimeout": 10000,
+    "forceExit": true
+}
