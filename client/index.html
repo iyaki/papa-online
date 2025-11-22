@@ -111,24 +111,34 @@
         </div>
 
         <!-- Stats Screen -->
-        <div id="stats-screen" class="screen hidden"
-            style="background: var(--bg-color); z-index: 50; position: fixed; top: 0; left: 0;">
-            <div class="card" style="max-width: 500px; width: 95%;">
-                <h2>Estadísticas Locales</h2>
-                <div style="text-align: center;">
-                    <div style="font-size: 2em; color: #f44336;" id="total-losses">0</div>
-                    <div>Derrotas</div>
+        <div id="stats-screen" class="screen hidden">
+            <div class="card" style="max-width: 500px; width: 95%; max-height: 90vh; overflow-y: auto;">
+                <h2>Estadísticas</h2>
+                <div style="display: flex; justify-content: space-around; margin-bottom: 20px;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 2em; color: #4caf50;" id="total-wins">0</div>
+                        <div>Victorias</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 2em; color: #f44336;" id="total-losses">0</div>
+                        <div>Derrotas</div>
+                    </div>
                 </div>
+                <p style="font-size: 0.85rem; color: #888; text-align: center; margin-bottom: 15px; padding: 0 10px;">
+                    ℹ️ Los datos se guardan solo en tu dispositivo y podrían perderse si borras datos del
+                    navegador.
+                </p>
+                <div id="stats-list" style="max-height: 50vh; overflow-y: auto; text-align: left; margin-bottom: 20px;">
+                    <!-- Items will be injected here -->
+                </div>
+                <button id="close-stats-btn" class="primary-btn"
+                    style="margin-top: 10px; margin-bottom: 20px; width: 95%;">Volver al Lobby</button>
             </div>
-            <div id="stats-list" style="max-height: 60vh; overflow-y: auto; text-align: left; margin-bottom: 20px;">
-                <!-- Items will be injected here -->
-            </div>
-            <button id="close-stats-btn" class="primary-btn">Volver al Lobby</button>
         </div>
 
         <!-- FAQ Screen -->
         <div id="faq-screen" class="screen hidden"
-            style="background: var(--bg-color); z-index: 50; position: fixed; top: 0; left: 0;">
+            style="background: var(--bg-color); z-index: 50; position: fixed; top: 0; left: 0; width: 100%; height: 100%;">
             <div class="card" style="max-width: 500px; width: 95%; max-height: 90vh; overflow-y: auto;">
                 <h2>Reglas y Ayuda</h2>
                 <div class="faq-content" style="text-align: left; line-height: 1.6;">
