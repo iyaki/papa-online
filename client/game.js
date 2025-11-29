@@ -389,10 +389,10 @@ export class Game {
         });
     }
 
-    exportToImage(playerText, resultText, resultColor, footerUrl) {
+    exportToImage(player1, player2, resultText, resultColor, footerUrl) {
         const exportCanvas = document.createElement('canvas');
         exportCanvas.width = this.canvas.width;
-        exportCanvas.height = this.canvas.height + 140; // Extra space for footer
+        exportCanvas.height = this.canvas.height + 160; // Extra space for footer
         const ctx = exportCanvas.getContext('2d');
 
         // Background
@@ -414,23 +414,50 @@ export class Game {
         ctx.drawImage(this.canvas, 0, 0);
 
         // Footer Area
-        const footerY = this.canvas.height + 40;
+        const footerY = this.canvas.height + 50;
         ctx.textAlign = 'center';
 
-        // Player Names
-        ctx.fillStyle = '#333';
+        // Player Names Logic
         ctx.font = 'bold 28px "Gochi Hand", cursive, sans-serif';
-        ctx.fillText(playerText || 'Juego de la Papa', exportCanvas.width / 2, footerY);
+
+        const p1Text = `${player1.name} ${player1.isWinner ? '🏆' : (player1.isWinner === false ? '💔' : '')}`;
+        const p2Text = `${player2.name} ${player2.isWinner ? '🏆' : (player2.isWinner === false ? '💔' : '')}`;
+        const vsText = " vs ";
+
+        // Measure widths to center everything
+        const p1Width = ctx.measureText(p1Text).width;
+        const vsWidth = ctx.measureText(vsText).width;
+        const p2Width = ctx.measureText(p2Text).width;
+        const totalWidth = p1Width + vsWidth + p2Width;
+
+        let startX = (exportCanvas.width - totalWidth) / 2;
+
+        // Draw Player 1
+        ctx.fillStyle = player1.isWinner ? '#27ae60' : (player1.isWinner === false ? '#c0392b' : '#333');
+        ctx.textAlign = 'left';
+        ctx.fillText(p1Text, startX, footerY);
+        startX += p1Width;
+
+        // Draw VS
+        ctx.fillStyle = '#7f8c8d';
+        ctx.fillText(vsText, startX, footerY);
+        startX += vsWidth;
+
+        // Draw Player 2
+        ctx.fillStyle = player2.isWinner ? '#27ae60' : (player2.isWinner === false ? '#c0392b' : '#333');
+        ctx.fillText(p2Text, startX, footerY);
 
         // Result
         if (resultText) {
+            ctx.textAlign = 'center';
             ctx.fillStyle = resultColor || '#333';
             ctx.font = 'bold 36px "Gochi Hand", cursive, sans-serif';
-            ctx.fillText(resultText, exportCanvas.width / 2, footerY + 40);
+            ctx.fillText(resultText, exportCanvas.width / 2, footerY + 50);
         }
 
         // URL
         if (footerUrl) {
+            ctx.textAlign = 'center';
             ctx.fillStyle = '#7f8c8d';
             ctx.font = '14px sans-serif';
             ctx.fillText(footerUrl, exportCanvas.width / 2, exportCanvas.height - 15);
@@ -439,4 +466,3 @@ export class Game {
         return exportCanvas.toDataURL('image/png');
     }
 }
-

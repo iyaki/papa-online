@@ -313,7 +313,6 @@ exportBtn.addEventListener('click', () => {
         // Calculate Metadata
         const myName = usernameInput.value.trim() || 'Yo';
         const opponentName = game.opponentName || 'Oponente';
-        const playerText = `${myName} vs ${opponentName}`;
 
         let resultText = 'Juego Terminado';
         let resultColor = '#333';
@@ -330,7 +329,18 @@ exportBtn.addEventListener('click', () => {
 
         const footerUrl = window.location.href;
 
-        const dataUrl = game.exportToImage(playerText, resultText, resultColor, footerUrl);
+        // Prepare Player Objects
+        const player1 = {
+            name: myName,
+            isWinner: game.winner ? (game.winner === sessionToken) : null
+        };
+
+        const player2 = {
+            name: opponentName,
+            isWinner: game.winner ? (game.winner !== sessionToken) : null
+        };
+
+        const dataUrl = game.exportToImage(player1, player2, resultText, resultColor, footerUrl);
         const link = document.createElement('a');
         link.download = `juego-papa-${new Date().toISOString().split('T')[0]}.png`;
         link.href = dataUrl;
