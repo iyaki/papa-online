@@ -16,7 +16,9 @@ export class Game {
         this.currentNumber = 1;
         this.isMyTurn = false;
         this.isGameOver = false;
+        this.isGameOver = false;
         this.myPlayerId = socket.id;
+        this.animationFrameId = null;
 
         // Bind methods
         this.handleMouseDown = this.handleMouseDown.bind(this);
@@ -47,7 +49,7 @@ export class Game {
 
         // Socket Listeners
         this.socket.on('move_made', ({ line, nextNumber, currentTurn }) => {
-            this.lines.push(line);
+            if (line) this.lines.push(line);
             this.currentNumber = nextNumber;
             this.updateTurn(currentTurn);
             this.draw();
@@ -301,8 +303,13 @@ export class Game {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
         // Request animation frame for continuous pulse animation
+        if (this.animationFrameId) {
+            cancelAnimationFrame(this.animationFrameId);
+            this.animationFrameId = null;
+        }
+
         if (!this.isGameOver && this.currentNumber <= this.numbers.length) {
-            requestAnimationFrame(() => this.draw());
+            this.animationFrameId = requestAnimationFrame(() => this.draw());
         }
 
         // Draw Lines (Paths)
@@ -311,6 +318,7 @@ export class Game {
         this.ctx.lineJoin = 'round';
 
         this.lines.forEach(path => {
+            if (!path) return; // Skip null paths
             this.ctx.strokeStyle = '#2c3e50'; // Dark ink color
             this.ctx.beginPath();
             if (path.length > 0) {

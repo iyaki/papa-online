@@ -464,8 +464,13 @@ function enterGame(roomCode, opponentName = null) {
         game.roomCode = roomCode;
         game.username = username;
         game.socket = socket;
-        game.lines = []; // Clear previous game data
-        game.numbers = [];
+
+        // Only clear if it's a DIFFERENT room (or if we want to force reset)
+        // If it's the same room, we might be reconnecting, so keep data until sync arrives
+        if (game.roomCode !== roomCode) {
+            game.lines = [];
+            game.numbers = [];
+        }
         requestAnimationFrame(() => game.resizeCanvas());
     }
 
