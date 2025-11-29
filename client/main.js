@@ -300,9 +300,9 @@ restartBtn.addEventListener('click', () => {
     if (game && game.roomCode) {
         socket.emit('leave_room', { roomCode: game.roomCode });
     }
-    // Fallback reload
+    // Fallback reload - Clean URL to avoid auto-join loop
     setTimeout(() => {
-        window.location.reload();
+        window.location.href = window.location.pathname;
     }, 100);
 });
 
@@ -425,6 +425,12 @@ socket.on('my_games_update', () => {
 backToMenuBtn.addEventListener('click', () => {
     gameScreen.classList.add('hidden');
     lobbyScreen.classList.remove('hidden');
+
+    // Clear URL params to prevent auto-join on refresh
+    const url = new URL(window.location);
+    url.searchParams.delete('room');
+    window.history.pushState({}, '', url);
+
     game = null; // Clear current game instance to avoid conflicts? Or keep it? 
     // Better to clear it or pause it.
     socket.emit('get_my_games'); // Refresh list
