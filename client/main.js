@@ -103,10 +103,17 @@ if (roomFromUrl) {
     } else {
         // Focus username input
         usernameInput.focus();
+        // Visual hint: Pulse the join button
+        joinRoomBtn.classList.add('pulse-btn');
         // Optional: Show a message
-        alert(`Ingresa tu nombre para unirte a la sala ${roomFromUrl}`);
+        // alert(`Ingresa tu nombre para unirte a la sala ${roomFromUrl}`);
     }
 }
+
+// Remove pulse effect when button is clicked
+joinRoomBtn.addEventListener('mousedown', () => {
+    joinRoomBtn.classList.remove('pulse-btn');
+});
 
 // Request notification permission on page load
 if ('Notification' in window && Notification.permission === 'default') {

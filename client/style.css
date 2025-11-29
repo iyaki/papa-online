@@ -317,6 +317,31 @@ button:active {
     50% {
         box-shadow: 0 0 0 10px rgba(76, 175, 80, 0);
     }
+    50% {
+        box-shadow: 0 0 0 10px rgba(76, 175, 80, 0);
+    }
+}
+
+.pulse-btn {
+    animation: btn-pulse 1.5s infinite;
+    background-color: #4caf50 !important;
+    color: white !important;
+    border-color: #4caf50 !important;
+}
+
+@keyframes btn-pulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 0 0 10px rgba(76, 175, 80, 0);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
+    }
 }
 
 /* Game Screen */
