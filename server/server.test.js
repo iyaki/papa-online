@@ -4,22 +4,10 @@
  * Tests for core game logic and helper functions
  */
 
+const { generateNumbers, checkOverlap } = require('./server');
+
 describe('Room Management - Helper Functions', () => {
     test('generateNumbers should create correct number of points', () => {
-        // Mock the generateNumbers function
-        const generateNumbers = (count, width, height) => {
-            const numbers = [];
-            const padding = 40;
-            for (let i = 1; i <= count; i++) {
-                numbers.push({
-                    value: i,
-                    x: padding + Math.random() * (width - 2 * padding),
-                    y: padding + Math.random() * (height - 2 * padding)
-                });
-            }
-            return numbers;
-        };
-
         const result = generateNumbers(20, 600, 800);
         expect(result).toHaveLength(20);
         expect(result[0]).toHaveProperty('value', 1);
@@ -37,14 +25,6 @@ describe('Room Management - Helper Functions', () => {
     });
 
     test('checkOverlap should detect close points', () => {
-        const checkOverlap = (pos, numbers, minDist = 40) => {
-            return numbers.some(n => {
-                const dx = n.x - pos.x;
-                const dy = n.y - pos.y;
-                return Math.sqrt(dx * dx + dy * dy) < minDist;
-            });
-        };
-
         const existingNumbers = [
             { value: 1, x: 100, y: 100 }
         ];

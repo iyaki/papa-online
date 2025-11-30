@@ -4,164 +4,37 @@
  * These tests use the actual server and test real Socket.IO communication
  */
 
-const http = require('http');
-const express = require('express');
-const { Server } = require('socket.io');
 const { io: Client } = require('socket.io-client');
-
-// Import server logic to reuse functions
-function generateNumbers(count, width, height) {
-    const numbers = [];
-    const padding = 40;
-
-    const checkOverlap = (pos, numbers) => {
-        const minDist = 40;
-        return numbers.some(n => {
-            const dx = n.x - pos.x;
-            const dy = n.y - pos.y;
-            return Math.sqrt(dx * dx + dy * dy) < minDist;
-        });
-    };
-
-    for (let i = 1; i <= count; i++) {
-        let pos;
-        let attempts = 0;
-        do {
-            pos = {
-                value: i,
-                x: padding + Math.random() * (width - 2 * padding),
-                y: padding + Math.random() * (height - 2 * padding)
-            };
-            attempts++;
-        } while (checkOverlap(pos, numbers) && attempts < 100);
-        numbers.push(pos);
-    }
-    return numbers;
-}
+const { server, io, rooms } = require('./server');
 
 describe('Papa Online Server - Integration Tests', () => {
-    let io, serverSocket, httpServer, httpServerAddr;
     let clientSocket1, clientSocket2;
-    const rooms = {};
-    const playerSessions = {};
+    let httpServerAddr;
 
     beforeAll((done) => {
-        const app = express();
-        httpServer = http.createServer(app);
-        io = new Server(httpServer, {
-            cors: { origin: '*' }
-        });
-
-        // Implement minimal server logic for testing
-        io.on('connection', (socket) => {
-            const token = socket.handshake.auth.token;
-            console.log(`Test server: User connected ${socket.id} (Token: ${token})`);
-
-            socket.on('create_room', ({ username, pointCount }) => {
-                const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-                const numbers = generateNumbers(pointCount, 600, 800);
-
-                rooms[roomCode] = {
-                    players: [{
-                        id: socket.id,
-                        username,
-                        token
-                    }],
-                    numbers,
-                    lines: [],
-                    currentNumber: 1,
-                    currentTurn: socket.id
-                };
-
-                if (!playerSessions[token]) {
-                    playerSessions[token] = { username, rooms: [] };
-                }
-                playerSessions[token].rooms.push(roomCode);
-
-                socket.join(roomCode);
-                socket.emit('room_created', { roomCode, token });
-                socket.emit('game_start', {
-                    numbers,
-                    currentTurn: socket.id
-                });
-            });
-
-            socket.on('join_room', ({ roomCode, username }) => {
-                const room = rooms[roomCode];
-                if (room && room.players.length < 2) {
-                    room.players.push({
-                        id: socket.id,
-                        username,
-                        token
-                    });
-
-                    socket.join(roomCode);
-                    socket.emit('room_joined', { roomCode, token });
-
-                    // Emit game_start to both players
-                    io.to(roomCode).emit('game_start', {
-                        numbers: room.numbers,
-                        currentTurn: room.currentTurn
-                    });
-                }
-            });
-
-            socket.on('submit_move', ({ roomCode, line }) => {
-                const room = rooms[roomCode];
-                if (room && room.currentTurn === socket.id) {
-                    room.lines.push(line);
-                    room.currentNumber++;
-
-                    // Switch turn
-                    const currentPlayerIndex = room.players.findIndex(p => p.id === socket.id);
-                    const nextPlayerIndex = (currentPlayerIndex + 1) % room.players.length;
-                    room.currentTurn = room.players[nextPlayerIndex].id;
-
-                    io.to(roomCode).emit('move_made', {
-                        line,
-                        nextNumber: room.currentNumber,
-                        currentTurn: room.currentTurn
-                    });
-                }
-            });
-
-            socket.on('game_over', ({ roomCode, reason }) => {
-                const room = rooms[roomCode];
-                if (room) {
-                    const loserPlayer = room.players.find(p => p.id === socket.id);
-                    const winnerPlayer = room.players.find(p => p.id !== socket.id);
-
-                    room.loser = loserPlayer ? loserPlayer.token : 'unknown';
-                    room.winner = winnerPlayer ? winnerPlayer.token : 'unknown';
-
-                    io.to(roomCode).emit('game_over', {
-                        reason,
-                        loser: room.loser,
-                        winner: room.winner
-                    });
-                }
-            });
-        });
-
-        httpServer.listen(() => {
-            httpServerAddr = httpServer.address();
+        server.listen(() => {
+            const port = server.address().port;
+            console.log(`Test server running on port ${port}`);
+            httpServerAddr = { port };
             done();
         });
     });
 
     afterAll((done) => {
         io.close();
-        if (clientSocket1) clientSocket1.close();
-        if (clientSocket2) clientSocket2.close();
-        httpServer.close(done);
+        server.close(done);
     });
 
     afterEach(() => {
         if (clientSocket1) {
-            clientSocket1.removeAllListeners();
+            clientSocket1.close();
         }
         if (clientSocket2) {
-            clientSocket2.removeAllListeners();
+            clientSocket2.close();
+        }
+        // Cleanup rooms
+        for (const key in rooms) {
+            delete rooms[key];
         }
     });
 
@@ -203,7 +76,7 @@ describe('Papa Online Server - Integration Tests', () => {
 
     test('should allow second player to join room', (done) => {
         let roomCode;
-        let gameStartCount = 0;
+        let readyCount = 0;
 
         clientSocket1 = Client(`http://localhost:${httpServerAddr.port}`, {
             auth: { token: 'test-token-join-1' },
@@ -215,22 +88,30 @@ describe('Papa Online Server - Integration Tests', () => {
             autoConnect: false
         });
 
-        // Set up all listeners BEFORE connecting
+        const checkReady = () => {
+            readyCount++;
+            if (readyCount === 2) {
+                done();
+            }
+        };
+
+        // Player 1 gets game_start when creating
+        clientSocket1.on('game_start', () => {
+            checkReady();
+        });
+
+        // Player 2 gets game_sync when joining
+        clientSocket2.on('game_sync', (data) => {
+            expect(data).toHaveProperty('numbers');
+            expect(data).toHaveProperty('currentTurn');
+            checkReady();
+        });
+
         clientSocket1.on('room_created', (data) => {
             roomCode = data.roomCode;
             // Connect second client only after room is created
             clientSocket2.connect();
         });
-
-        const checkGameStart = () => {
-            gameStartCount++;
-            if (gameStartCount === 2) {
-                done();
-            }
-        };
-
-        clientSocket1.on('game_start', checkGameStart);
-        clientSocket2.on('game_start', checkGameStart);
 
         clientSocket2.on('connect', () => {
             if (roomCode) {
@@ -254,6 +135,7 @@ describe('Papa Online Server - Integration Tests', () => {
 
     test('should handle turn-based moves correctly', (done) => {
         let roomCode;
+        let bothReady = false;
 
         clientSocket1 = Client(`http://localhost:${httpServerAddr.port}`, {
             auth: { token: 'test-token-turn-1' },
@@ -267,6 +149,9 @@ describe('Papa Online Server - Integration Tests', () => {
 
         let receivedMoves = 0;
         const handleMove = (data) => {
+            // Ignore the initial move_made with null line sent when player 2 joins
+            if (!data.line) return;
+
             expect(data).toHaveProperty('line');
             expect(data).toHaveProperty('nextNumber', 2);
             receivedMoves++;
@@ -281,11 +166,10 @@ describe('Papa Online Server - Integration Tests', () => {
             clientSocket2.connect();
         });
 
-        let gameStartCount = 0;
-        const handleGameStart = () => {
-            gameStartCount++;
-            if (gameStartCount === 2) {
-                // Both players ready, make a move
+        // Player 1 gets game_start when creating
+        clientSocket1.on('game_start', () => {
+            if (bothReady) {
+        // Both ready, make a move
                 setTimeout(() => {
                     clientSocket1.emit('submit_move', {
                         roomCode,
@@ -293,10 +177,19 @@ describe('Papa Online Server - Integration Tests', () => {
                     });
                 }, 100);
             }
-        };
+        });
 
-        clientSocket1.on('game_start', handleGameStart);
-        clientSocket2.on('game_start', handleGameStart);
+        // Player 2 gets game_sync when joining
+        clientSocket2.on('game_sync', () => {
+            bothReady = true;
+            // Trigger the move from player 1
+            setTimeout(() => {
+                clientSocket1.emit('submit_move', {
+                    roomCode,
+                    line: [{ x: 100, y: 100 }, { x: 150, y: 150 }]
+                });
+            }, 100);
+        });
 
         clientSocket2.on('connect', () => {
             if (roomCode) {
@@ -347,21 +240,20 @@ describe('Papa Online Server - Integration Tests', () => {
             clientSocket2.connect();
         });
 
-        let bothReady = 0;
-        const triggerGameOver = () => {
-            bothReady++;
-            if (bothReady === 2) {
-                setTimeout(() => {
-                    clientSocket1.emit('game_over', {
-                        roomCode,
-                        reason: 'Línea cruzada'
-                    });
-                }, 100);
-            }
-        };
+        // Player 1 gets game_start
+        clientSocket1.on('game_start', () => {
+            // Wait for player 2 to be ready
+        });
 
-        clientSocket1.on('game_start', triggerGameOver);
-        clientSocket2.on('game_start', triggerGameOver);
+        // Player 2 gets game_sync, trigger game over
+        clientSocket2.on('game_sync', () => {
+            setTimeout(() => {
+                clientSocket1.emit('game_over', {
+                    roomCode,
+                    reason: 'Línea cruzada'
+                });
+            }, 100);
+        });
 
         clientSocket2.on('connect', () => {
             if (roomCode) {
@@ -375,6 +267,83 @@ describe('Papa Online Server - Integration Tests', () => {
         clientSocket1.on('connect', () => {
             clientSocket1.emit('create_room', {
                 username: 'GameOverPlayer1',
+                pointCount: 5
+            });
+        });
+
+        clientSocket1.connect();
+    }, 10000);
+
+    test('should handle surrender (leave_room)', (done) => {
+        let roomCode;
+
+        clientSocket1 = Client(`http://localhost:${httpServerAddr.port}`, {
+            auth: { token: 'test-token-surrender-1' },
+            autoConnect: false
+        });
+
+        clientSocket2 = Client(`http://localhost:${httpServerAddr.port}`, {
+            auth: { token: 'test-token-surrender-2' },
+            autoConnect: false
+        });
+
+        clientSocket1.on('room_created', (data) => {
+            roomCode = data.roomCode;
+            clientSocket2.connect();
+        });
+
+        clientSocket2.on('player_left', (data) => {
+            expect(data).toHaveProperty('playerId');
+            done();
+        });
+
+        // Player 2 gets game_sync, then player 1 leaves
+        clientSocket2.on('game_sync', () => {
+            // Player 1 leaves
+            clientSocket1.emit('leave_room', { roomCode });
+        });
+
+        clientSocket2.on('connect', () => {
+            if (roomCode) {
+                clientSocket2.emit('join_room', {
+                    roomCode,
+                    username: 'SurrenderPlayer2'
+                });
+            }
+        });
+
+        clientSocket1.on('connect', () => {
+            clientSocket1.emit('create_room', {
+                username: 'SurrenderPlayer1',
+                pointCount: 5
+            });
+        });
+
+        clientSocket1.connect();
+    }, 10000);
+
+    test('should return my games list', (done) => {
+        clientSocket1 = Client(`http://localhost:${httpServerAddr.port}`, {
+            auth: { token: 'test-token-mygames' },
+            autoConnect: false
+        });
+
+        clientSocket1.on('my_games_list', (games) => {
+            if (games.length > 0) {
+                expect(games[0]).toHaveProperty('roomCode');
+                expect(games[0]).toHaveProperty('opponentName');
+                done();
+            }
+        });
+
+        clientSocket1.on('room_created', () => {
+            // Request games list
+            clientSocket1.emit('get_my_games');
+        });
+
+        clientSocket1.on('connect', () => {
+            clientSocket1.emit('create_room', {
+                username: 'MyGamesPlayer',
                 pointCount: 5
             });
         });

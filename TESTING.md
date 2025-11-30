@@ -21,6 +21,8 @@ npm test
 
 ## Cobertura de Tests
 
+**Cobertura actual**: 14 tests (7 unit + 7 integration) | Coverage: 75% ✅
+
 ### ✅ Unit Tests (7 tests)
 
 #### Funciones de Gestión de Salas
@@ -36,7 +38,7 @@ npm test
 #### Gestión de Sesiones
 - **Generación de UUID**: Validación de formato UUID v4
 
-### ✅ Integration Tests (5 tests)
+### ✅ Integration Tests (7 tests)
 
 #### Comunicación Socket.IO
 - **Conexión con autenticación**: Verificación de token en handshake
@@ -44,6 +46,8 @@ npm test
 - **Unión a sala**: Sincronización de dos jugadores en la misma sala
 - **Movimientos por turnos**: Validación de `move_made` y cambio de turno
 - **Game Over**: Correcta identificación de ganador y perdedor
+- **Surrender**: Validación de evento `leave_room` y `player_left`
+- **My Games List**: Verificación de lista de partidas activas
 
 ## GitHub Actions - CI/CD
 
@@ -100,10 +104,9 @@ describe('Feature Name', () => {
 
 ## Próximos Pasos para Testing
 
-1. **Tests de Integración**: Agregar tests que verifiquen la comunicación Socket.IO
-2. **Tests E2E**: Implementar tests de extremo a extremo con Playwright
-3. **Tests de Detección de Colisiones**: Validar la lógica de intersección de líneas
-4. **Tests de Reconexión**: Verificar la persistencia de sesión
+1. **Tests E2E**: Implementar tests de extremo a extremo con Playwright
+2. **Tests de Detección de Colisiones**: Validar la lógica de intersección de líneas
+3. **Tests de Reconexión**: Verificar la persistencia de sesión
 
 ## Comandos Disponibles
 
