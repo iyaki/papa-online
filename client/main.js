@@ -115,10 +115,30 @@ joinRoomBtn.addEventListener('mousedown', () => {
     joinRoomBtn.classList.remove('pulse-btn');
 });
 
-// Request notification permission on page load
-if ('Notification' in window && Notification.permission === 'default') {
-    Notification.requestPermission();
+// Notification Logic
+const enableNotificationsBtn = document.getElementById('enable-notifications-btn');
+
+function updateNotificationButton() {
+    if (!('Notification' in window)) {
+        enableNotificationsBtn.classList.add('hidden');
+        return;
+    }
+
+    if (Notification.permission === 'default' || Notification.permission === 'denied') {
+        enableNotificationsBtn.classList.remove('hidden');
+    } else {
+        enableNotificationsBtn.classList.add('hidden');
+    }
 }
+
+enableNotificationsBtn.addEventListener('click', () => {
+    Notification.requestPermission().then((permission) => {
+        updateNotificationButton();
+    });
+});
+
+// Check initially
+updateNotificationButton();
 
 // Helper to check if page is visible
 function isPageVisible() {
@@ -130,9 +150,9 @@ function sendNotification(title, body) {
     if ('Notification' in window && Notification.permission === 'granted' && !isPageVisible()) {
         const notification = new Notification(title, {
             body: body,
-            icon: '/favicon.ico', // You can add a custom icon
+            icon: '/favicon.ico', 
             badge: '/favicon.ico',
-            tag: 'turn-notification', // Replaces previous notification
+            tag: 'turn-notification',
             requireInteraction: false
         });
 
