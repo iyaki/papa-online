@@ -606,12 +606,33 @@ socket.on('my_games_list', (games) => {
         }
 
         div.innerHTML = `
-            <span>Sala: <b>${g.roomCode}</b> vs ${g.opponentName}</span>
-            ${statusHtml}
+            <div style="flex-grow: 1;">
+                <span>Sala: <b>${g.roomCode}</b> vs ${g.opponentName}</span>
+                <br>
+                ${statusHtml}
+            </div>
+            <button class="delete-btn icon-btn" title="Abandonar Partida" style="margin-left: 10px; color: #999; padding: 5px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+            </button>
         `;
 
-        div.addEventListener('click', () => {
+        // Click on item -> Enter Game
+        div.addEventListener('click', (e) => {
             enterGame(g.roomCode, g.opponentName);
+        });
+
+        // Click on Delete -> Abandon Game
+        const deleteBtn = div.querySelector('.delete-btn');
+        deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Don't trigger enterGame
+            if (confirm(`¿Estás seguro que quieres abandonar la sala ${g.roomCode}? Se borrará de tu lista.`)) {
+                socket.emit('leave_room', { roomCode: g.roomCode });
+                // Optimistic removal
+                div.remove();
+                if (myGamesList.children.length === 0) {
+                    myGamesList.innerHTML = '<p style="opacity: 0.6;">No tienes partidas activas.</p>';
+                }
+            }
         });
 
         myGamesList.appendChild(div);
