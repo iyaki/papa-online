@@ -545,6 +545,9 @@ joinRoomBtn.addEventListener('click', () => {
     localStorage.setItem('username', username);
     socket.emit('join_room', { username, roomCode });
     enterGame(roomCode); // Optimistic entry, server will error if failed
+
+    // Clear input
+    roomCodeInput.value = '';
 });
 
 const backToMenuBtn = document.getElementById('back-to-menu-btn');
