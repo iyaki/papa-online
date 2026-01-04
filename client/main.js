@@ -561,6 +561,17 @@ socket.on('my_games_list', (games) => {
         return;
     }
 
+    // Sort games: 
+    // 1. My Turn
+    // 2. Rematch Requested (by me or opponent)
+    // 3. Waiting for Opponent
+    // 4. Game Over (Completed)
+    games.sort((a, b) => {
+        const scoreA = getGameSortScore(a);
+        const scoreB = getGameSortScore(b);
+        return scoreB - scoreA; // Descending order
+    });
+
     games.forEach(g => {
         const div = document.createElement('div');
         div.className = 'game-item';
@@ -662,6 +673,17 @@ function enterGame(roomCode, opponentName = null) {
     }, 100);
 }
 
+function getGameSortScore(g) {
+    if (g.isGameOver) {
+        if (g.rematchRequestedBy) {
+            if (g.rematchRequestedBy !== sessionToken) return 3; // Opponent asked for rematch (High priority!)
+            return 2; // I asked for rematch
+        }
+        return 0; // Just finished
+    }
+    if (g.isMyTurn) return 4; // My turn (Highest priority for active games)
+    return 1; // Waiting for opponent
+}
 
 
 // --- Local Statistics ---
