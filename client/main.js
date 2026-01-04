@@ -713,6 +713,12 @@ function updateStats(opponentName, isWin, roomCode) {
         return;
     }
 
+    // Ignore invalid opponents (single player sessions that ended/reset)
+    if (!opponentName || opponentName === 'Oponente' || opponentName === 'Esperando...') {
+        console.log("Stats ignored: No valid opponent joined");
+        return;
+    }
+
     stats.processedGames.push(roomCode);
 
     // Update Totals
