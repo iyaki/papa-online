@@ -676,6 +676,9 @@ function enterGame(roomCode, opponentName = null) {
         game.roomCode = roomCode;
         game.username = username;
         game.socket = socket;
+    }
+
+    window.game = game; // Expose for E2E
 
         // Only clear if it's a DIFFERENT room (or if we want to force reset)
         // If it's the same room, we might be reconnecting, so keep data until sync arrives
@@ -683,8 +686,7 @@ function enterGame(roomCode, opponentName = null) {
             game.lines = [];
             game.numbers = [];
         }
-        requestAnimationFrame(() => game.resizeCanvas());
-    }
+    requestAnimationFrame(() => game.resizeCanvas());
 
     if (opponentName) {
         game.opponentName = opponentName;
