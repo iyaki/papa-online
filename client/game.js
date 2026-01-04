@@ -19,6 +19,7 @@ export class Game {
         this.isGameOver = false;
         this.myPlayerId = socket.id;
         this.animationFrameId = null;
+        this.rematchRequestedBy = null;
 
         // Bind methods
         this.handleMouseDown = this.handleMouseDown.bind(this);

@@ -53,6 +53,31 @@ function checkOverlap(pos, numbers) {
 // In a real app, this would be in a DB/Redis.
 const playerSessions = {};
 
+function scheduleCleanup(roomCode) {
+    if (!rooms[roomCode]) return; // Already deleted
+
+    const cleanupDelay = 3 * 24 * 60 * 60 * 1000; // 3 days
+    const timeSinceLastActivity = Date.now() - rooms[roomCode].lastActivity;
+
+    if (timeSinceLastActivity >= cleanupDelay) {
+        // Notify players before deletion
+        if (rooms[roomCode].players) {
+            rooms[roomCode].players.forEach(p => {
+                io.to(p.id).emit('room_deleted', { roomCode });
+                io.to(p.id).emit('my_games_update');
+            });
+        }
+
+        delete rooms[roomCode];
+        console.log(`Room ${roomCode} deleted (inactivity timeout)`);
+    } else {
+        // Check again when it would expire
+        const nextCheck = cleanupDelay - timeSinceLastActivity;
+        // Add a small buffer (e.g. 1000ms) to avoid tight loops if execution is fast
+        setTimeout(() => scheduleCleanup(roomCode), nextCheck + 1000);
+    }
+}
+
 io.on('connection', (socket) => {
     const token = socket.handshake.auth.token;
     console.log(`User connected: ${socket.id} (Token: ${token})`);
@@ -64,15 +89,21 @@ io.on('connection', (socket) => {
                 const r = rooms[code];
                 if (!r) return null;
                 const opponent = r.players.find(p => p.token !== token);
+
+                // Debug log
+                // console.log(`Sending game ${code}: rematchRequestedBy=${r.rematchRequestedBy}`);
+
                 return {
                     roomCode: code,
                     opponentName: opponent ? opponent.username : 'Esperando...',
                     isMyTurn: r.currentTurn === socket.id,
                     isGameOver: !!r.winner,
                     winner: r.winner,
-                    loser: r.loser
+                    loser: r.loser,
+                    rematchRequestedBy: r.rematchRequestedBy
                 };
             }).filter(g => g !== null);
+            console.log(`Sending ${myGames.length} games to ${token}. Data:`, JSON.stringify(myGames.map(g => ({ code: g.roomCode, rematch: g.rematchRequestedBy }))));
             socket.emit('my_games_list', myGames);
         }
     };
@@ -121,7 +152,8 @@ io.on('connection', (socket) => {
             numbers: numbers,
             lines: [],
             currentNumber: 1,
-            currentTurn: socket.id // Creator starts first
+            currentTurn: socket.id, // Creator starts first
+            lastActivity: Date.now()
         };
 
         // Save Session (Multi-room)
@@ -137,6 +169,7 @@ io.on('connection', (socket) => {
         socket.emit('room_created', { roomCode, token });
 
         // Emit game_start immediately so creator can draw
+        // Emit game_start immediately so creator can draw
         socket.emit('game_start', {
             numbers: numbers,
             currentTurn: socket.id
@@ -144,7 +177,11 @@ io.on('connection', (socket) => {
 
         console.log(`Room ${roomCode} created by ${username} with ${pointCount} points`);
         sendMyGames();
+
+        // Start cleanup timer
+        scheduleCleanup(roomCode);
     });
+
 
     socket.on('join_room', ({ roomCode, username }) => {
         const room = rooms[roomCode];
@@ -208,7 +245,8 @@ io.on('connection', (socket) => {
                         isGameOver: false,
                         winner: null,
                         loser: null,
-                        players: room.players
+                        players: room.players,
+                        rematchRequestedBy: room.rematchRequestedBy
                     });
 
                     // Also notify the creator of the updated turn
@@ -242,7 +280,8 @@ io.on('connection', (socket) => {
                 isGameOver: !!room.winner,
                 winner: room.winner,
                 loser: room.loser,
-                players: room.players.map(p => ({ username: p.username, token: p.token }))
+                players: room.players.map(p => ({ username: p.username, token: p.token })),
+                rematchRequestedBy: room.rematchRequestedBy
             });
         }
     });
@@ -267,6 +306,8 @@ io.on('connection', (socket) => {
                 nextNumber: room.currentNumber,
                 currentTurn: room.currentTurn
             });
+
+            room.lastActivity = Date.now();
 
             // Notify both players to update their game lists (turn changed)
             room.players.forEach(p => {
@@ -293,6 +334,8 @@ io.on('connection', (socket) => {
             const winnerPlayer = room.players.find(p => p.id !== socket.id);
             room.winner = winnerPlayer ? winnerPlayer.token : 'unknown';
 
+            room.lastActivity = Date.now();
+
             console.log('Game Over Server:', {
                 roomCode,
                 loserSocket: socket.id,
@@ -305,13 +348,7 @@ io.on('connection', (socket) => {
             // Notify for list update
             room.players.forEach(p => io.to(p.id).emit('my_games_update'));
 
-            // Schedule cleanup (1 hour)
-            setTimeout(() => {
-                if (rooms[roomCode]) {
-                    delete rooms[roomCode];
-                    console.log(`Room ${roomCode} deleted (timeout)`);
-                }
-            }, 60 * 60 * 1000);
+            // Cleanup is handled by the centralized scheduleCleanup function started at creation
         }
     });
 
@@ -338,6 +375,73 @@ io.on('connection', (socket) => {
 
             socket.emit('left_room_success');
             sendMyGames();
+        }
+    });
+
+    socket.on('request_rematch', ({ roomCode }) => {
+        const room = rooms[roomCode];
+        if (room) {
+            room.rematchRequestedBy = token; // Store who requested
+            room.lastActivity = Date.now();
+
+            console.log(`Rematch requested in room ${roomCode} by ${token}`);
+
+            // Find opponent
+            const opponent = room.players.find(p => p.id !== socket.id);
+            if (opponent) {
+                io.to(opponent.id).emit('rematch_requested');
+            }
+
+            // Update lists for both (to show status in lobby)
+            room.players.forEach(p => io.to(p.id).emit('my_games_update'));
+        }
+    });
+
+    socket.on('respond_rematch', ({ roomCode, accept }) => {
+        const room = rooms[roomCode];
+        if (room) {
+            const opponent = room.players.find(p => p.id !== socket.id);
+            room.lastActivity = Date.now();
+
+            if (accept) {
+                // Reset Game
+                const pointCount = room.numbers.length; // Keep same difficulty
+                room.numbers = generateNumbers(pointCount, 600, 800);
+                room.lines = [];
+                room.currentNumber = 1;
+                room.winner = null;
+                room.loser = null;
+                room.rematchRequestedBy = null; // Clear request
+
+                // Swap turns for fairness? Or just random? Let's swap.
+                // If currentTurn was X, now it's Y.
+                // But wait, currentTurn might be null or stuck.
+                // Let's just set it to the player who ACCEPTED (socket.id) or the other one.
+                // Let's set it to the player who ACCEPTED (socket.id) as requested.
+                room.currentTurn = socket.id;
+
+                // Emit Game Restart to BOTH
+                io.to(roomCode).emit('game_restarted', {
+                    numbers: room.numbers,
+                    currentTurn: room.currentTurn
+                });
+
+                // Update lists for both (to clear status in lobby)
+                room.players.forEach(p => io.to(p.id).emit('my_games_update'));
+
+                console.log(`Rematch started in room ${roomCode}`);
+
+            } else {
+                room.rematchRequestedBy = null; // Clear request
+
+                // Notify requester that it was rejected
+                if (opponent) {
+                    io.to(opponent.id).emit('rematch_rejected');
+                }
+
+                // Update lists for both (to clear status in lobby)
+                room.players.forEach(p => io.to(p.id).emit('my_games_update'));
+            }
         }
     });
 

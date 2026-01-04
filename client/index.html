@@ -60,6 +60,9 @@
                     <div id="my-games-list">
                         <!-- Games will be injected here -->
                     </div>
+                    <p style="font-size: 0.8rem; color: #666; margin-top: 5px; font-style: italic;">
+                        * Las salas inactivas se eliminan después de 3 días.
+                    </p>
                 </div>
             </div>
         </div>
@@ -124,8 +127,20 @@
         <div id="game-over-screen" class="screen hidden">
             <div class="modal-content">
                 <h2 id="game-over-message">Juego Terminado</h2>
-                <button id="restart-btn" class="primary-btn">Volver al Lobby</button>
-                <button id="export-btn" class="primary-btn" style="margin-top: 10px;">📸 Guardar Recuerdo</button>
+                <button id="rematch-btn" class="primary-btn" style="margin-top: 10px; background-color: var(--accent-color);">🔄 Pedir
+                    Revancha</button>
+                <button id="restart-btn" class="secondary-btn" style="margin-top: 10px;">Volver al Lobby</button>
+                <button id="export-btn" class="secondary-btn" style="margin-top: 10px;">📸 Guardar Recuerdo</button>
+                
+                <div id="rematch-request-container" class="hidden"
+                    style="margin-top: 20px; padding: 15px; background: rgba(0,0,0,0.05); border-radius: 10px;">
+                    <p style="margin-bottom: 10px; font-weight: bold;">¡Tu oponente quiere la revancha!</p>
+                    <div style="display: flex; gap: 10px;">
+                        <button id="accept-rematch-btn" class="primary-btn" style="font-size: 1rem; padding: 10px;">Aceptar</button>
+                        <button id="reject-rematch-btn" class="secondary-btn" style="font-size: 1rem; padding: 10px;">Rechazar</button>
+                    </div>
+                </div>
+                <p id="rematch-status" style="margin-top: 15px; font-style: italic; color: #666;" class="hidden"></p>
             </div>
         </div>
 
@@ -177,6 +192,9 @@
                     <p>Si encuentras algún problema o error en el juego, por favor repórtalo a: <a
                             href="mailto:juego-papa@iyaki.ar"
                             style="color: var(--accent-color); text-decoration: underline;">juego-papa@iyaki.ar</a></p>
+<h3>⏳ Duración de las Salas</h3>
+<p>Las partidas guardadas en "Mis Partidas" se mantienen activas durante <strong>3 días</strong> después de la última
+    actividad.</p>
                 </div>
                 <button id="close-faq-btn" class="primary-btn"
                     style="margin-top: 20px; margin-bottom: 20px; width: 95%;">Entendido</button>

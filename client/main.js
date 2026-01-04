@@ -245,7 +245,7 @@ socket.on('move_made', ({ line, nextNumber, currentTurn }) => {
 });
 
 // Reconnection / Sync Event
-socket.on('game_sync', ({ roomCode, numbers, lines, currentNumber, currentTurn, isGameOver, winner, loser, players }) => {
+socket.on('game_sync', ({ roomCode, numbers, lines, currentNumber, currentTurn, isGameOver, winner, loser, players, rematchRequestedBy }) => {
     console.log("Reconnected to game:", roomCode);
 
     // Restore UI
@@ -265,7 +265,6 @@ socket.on('game_sync', ({ roomCode, numbers, lines, currentNumber, currentTurn, 
     }
 
     // Restore Game State
-    // Restore Game State
     game.syncState(numbers, lines, currentNumber, currentTurn, isGameOver);
 
     // Store metadata for export
@@ -277,6 +276,52 @@ socket.on('game_sync', ({ roomCode, numbers, lines, currentNumber, currentTurn, 
         game.opponentName = opponent ? opponent.username : 'Oponente';
     } else {
         game.opponentName = 'Oponente';
+    }
+
+    // Handle Rematch State
+    if (isGameOver) {
+        // Show Game Over Screen
+        document.getElementById('game-over-screen').classList.remove('hidden');
+
+        // Update message
+        const message = document.getElementById('game-over-message');
+        if (winner === sessionToken) {
+            message.innerText = "¡GANASTE! 🏆";
+            message.style.color = "#4caf50";
+            createConfetti();
+        } else {
+            message.innerText = "Juego Terminado 🥔";
+            message.style.color = "var(--accent-color)";
+        }
+
+        // Check Rematch Status
+        const requestContainer = document.getElementById('rematch-request-container');
+        const rematchBtn = document.getElementById('rematch-btn');
+        const statusText = document.getElementById('rematch-status');
+
+        // Reset UI first
+        requestContainer.classList.add('hidden');
+        rematchBtn.classList.remove('hidden');
+        rematchBtn.disabled = false;
+        rematchBtn.innerText = "🔄 Pedir Revancha";
+        statusText.classList.add('hidden');
+
+        if (rematchRequestedBy) {
+            if (rematchRequestedBy === sessionToken) {
+                // I requested it
+                rematchBtn.disabled = true;
+                rematchBtn.innerText = "Esperando respuesta...";
+                statusText.innerText = "Esperando a que el oponente acepte...";
+                statusText.classList.remove('hidden');
+                statusText.style.color = "#666";
+            } else {
+                // Opponent requested it
+                requestContainer.classList.remove('hidden');
+                rematchBtn.classList.add('hidden');
+            }
+        }
+    } else {
+        document.getElementById('game-over-screen').classList.add('hidden');
     }
 
     // Update Local Stats
@@ -299,18 +344,134 @@ socket.on('error', ({ message }) => {
     alert(message);
 });
 
+socket.on('room_deleted', ({ roomCode }) => {
+    console.log(`Room ${roomCode} was deleted by server.`);
+
+    // If we are currently in this room, go back to lobby
+    if (game && game.roomCode === roomCode) {
+        alert('La sala ha expirado por inactividad.');
+        gameScreen.classList.add('hidden');
+        document.getElementById('game-over-screen').classList.add('hidden');
+        lobbyScreen.classList.remove('hidden');
+        game = null;
+
+        // Clear URL params
+        const url = new URL(window.location);
+        url.searchParams.delete('room');
+        window.history.pushState({}, '', url);
+    } else {
+        // Just show a toast/notification if we are in lobby
+        // Simple alert for now, or a custom toast if we had one. 
+        // Since my_games_update will remove it from the list, maybe just a log is enough?
+        // Let's use a non-intrusive notification if possible.
+        // For now, let's rely on the list update visual cue, but log it.
+        // Or if we want to be explicit:
+        // sendNotification('Sala Expirada', `La sala ${roomCode} ha sido eliminada por inactividad.`);
+    }
+
+    socket.emit('get_my_games');
+});
+
+// Rematch Logic
+socket.on('rematch_requested', () => {
+    const requestContainer = document.getElementById('rematch-request-container');
+    const rematchBtn = document.getElementById('rematch-btn');
+    const statusText = document.getElementById('rematch-status');
+
+    requestContainer.classList.remove('hidden');
+    rematchBtn.classList.add('hidden'); // Hide "Ask for rematch" since opponent already asked
+    statusText.classList.add('hidden');
+
+    if (game) game.rematchRequestedBy = 'opponent'; // Mark as active
+});
+
+socket.on('rematch_rejected', () => {
+    const statusText = document.getElementById('rematch-status');
+    statusText.innerText = "El oponente rechazó la revancha.";
+    statusText.classList.remove('hidden');
+    statusText.style.color = "#f44336";
+
+    // Re-enable button? Or just leave it.
+    document.getElementById('rematch-btn').disabled = false;
+    document.getElementById('rematch-btn').innerText = "Pedir Revancha";
+
+    if (game) game.rematchRequestedBy = null;
+});
+
+socket.on('game_restarted', ({ numbers, currentTurn }) => {
+    console.log('Game Restarted!', numbers);
+
+    // Hide Game Over Screen
+    document.getElementById('game-over-screen').classList.add('hidden');
+
+    // Reset UI elements
+    document.getElementById('rematch-request-container').classList.add('hidden');
+    document.getElementById('rematch-status').classList.add('hidden');
+    document.getElementById('rematch-btn').classList.remove('hidden');
+    document.getElementById('rematch-btn').disabled = false;
+    document.getElementById('rematch-btn').innerText = "🔄 Pedir Revancha";
+
+    if (game) {
+        // Reset local game state
+        game.lines = [];
+        game.numbers = [];
+        game.winner = null;
+        game.loser = null;
+        game.rematchRequestedBy = null;
+        game.startGame(numbers, currentTurn);
+    }
+});
+
 
 
 // UI Events
 const restartBtn = document.getElementById('restart-btn');
 restartBtn.addEventListener('click', () => {
+    // Always soft leave: Just go back to lobby, don't leave the room so it stays in "My Games"
+    // This allows accepting rematches later from the lobby.
+
+    gameScreen.classList.add('hidden');
+    document.getElementById('game-over-screen').classList.add('hidden');
+    lobbyScreen.classList.remove('hidden');
+
+    // Refresh list
+    socket.emit('get_my_games');
+
+    // Clear URL params
+    const url = new URL(window.location);
+    url.searchParams.delete('room');
+    window.history.pushState({}, '', url);
+});
+
+const rematchBtn = document.getElementById('rematch-btn');
+rematchBtn.addEventListener('click', () => {
     if (game && game.roomCode) {
-        socket.emit('leave_room', { roomCode: game.roomCode });
+        socket.emit('request_rematch', { roomCode: game.roomCode });
+        rematchBtn.disabled = true;
+        rematchBtn.innerText = "Esperando respuesta...";
+
+        if (game) game.rematchRequestedBy = sessionToken; // I requested it
+
+        const statusText = document.getElementById('rematch-status');
+        statusText.innerText = "Esperando a que el oponente acepte...";
+        statusText.classList.remove('hidden');
+        statusText.style.color = "#666";
     }
-    // Fallback reload - Clean URL to avoid auto-join loop
-    setTimeout(() => {
-        window.location.href = window.location.pathname;
-    }, 100);
+});
+
+document.getElementById('accept-rematch-btn').addEventListener('click', () => {
+    if (game && game.roomCode) {
+        socket.emit('respond_rematch', { roomCode: game.roomCode, accept: true });
+    }
+});
+
+document.getElementById('reject-rematch-btn').addEventListener('click', () => {
+    if (game && game.roomCode) {
+        socket.emit('respond_rematch', { roomCode: game.roomCode, accept: false });
+        document.getElementById('rematch-request-container').classList.add('hidden');
+        document.getElementById('rematch-btn').classList.remove('hidden'); // Show request button again
+        if (game) game.rematchRequestedBy = null;
+    }
 });
 
 const exportBtn = document.getElementById('export-btn');
@@ -413,10 +574,18 @@ socket.on('my_games_list', (games) => {
 
         let statusHtml = '';
         if (g.isGameOver) {
-            if (g.winner === sessionToken) {
-                statusHtml = '<span style="color: #4caf50; font-weight: bold;">¡Ganaste!</span>';
+            if (g.rematchRequestedBy) {
+                if (g.rematchRequestedBy === sessionToken) {
+                    statusHtml = '<span style="color: #666; font-style: italic;">Esperando revancha...</span>';
+                } else {
+                    statusHtml = '<span style="color: var(--accent-color); font-weight: bold;">¡Revancha pedida!</span>';
+                }
             } else {
-                statusHtml = '<span style="color: #f44336; font-weight: bold;">Perdiste</span>';
+                if (g.winner === sessionToken) {
+                    statusHtml = '<span style="color: #4caf50; font-weight: bold;">¡Ganaste!</span>';
+                } else {
+                    statusHtml = '<span style="color: #f44336; font-weight: bold;">Perdiste</span>';
+                }
             }
         } else {
             statusHtml = g.isMyTurn ? '<span style="color: var(--accent-color); font-weight: bold;">¡Tu Turno!</span>' : 'Esperando...';
@@ -489,6 +658,8 @@ function enterGame(roomCode, opponentName = null) {
         if (game) game.resizeCanvas();
     }, 100);
 }
+
+
 
 // --- Local Statistics ---
 
