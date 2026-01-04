@@ -340,8 +340,9 @@ socket.on('game_over', ({ reason, loser, winner }) => {
     }
 });
 
-socket.on('error', ({ message }) => {
-    alert(message);
+socket.on('error', (err) => {
+    const msg = err.message || err || 'Ocurrió un error desconocido.';
+    alert(msg);
 });
 
 socket.on('room_deleted', ({ roomCode }) => {

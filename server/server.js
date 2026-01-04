@@ -261,10 +261,10 @@ io.on('connection', (socket) => {
                 }
                 sendMyGames();
             } else {
-                socket.emit('error', 'Room is full');
+                socket.emit('error', { message: '⛔ La sala está llena. Ya hay 2 jugadores.' });
             }
         } else {
-            socket.emit('error', 'Room not found');
+            socket.emit('error', { message: '🔍 No se encontró la sala. Verifica el código.' });
         }
     });
 
