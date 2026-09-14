@@ -38,7 +38,7 @@ Open Questions / Risks section):
 - [`game-end.md`](./game-end.md) — game_over, winner/loser, local stats, disconnect semantics
 - [`rematch.md`](./rematch.md) — request/accept/reject, game restart, lobby status
 - [`auto-complete-stroke.md`](./auto-complete-stroke.md) — stroke ends automatically when it reaches the target number (fixes #15)
-- [`app-versioning.md`](./app-versioning.md) — deploy version identity (git SHA via Docker build args), `GET /api/version`, server-rendered lobby version line, versioned asset URLs `/v/<version>/…` for cache correctness behind Cloudflare (Proposed)
+- [`app-versioning.md`](./app-versioning.md) — deploy version identity (git SHA via Docker build args), `GET /api/version`, server-rendered lobby version line, versioned asset URLs `/v/<version>/…` for cache correctness behind Cloudflare
 
 When a new spec is complete, add it to this list (the `spec-creator` skill
 requires this too).
