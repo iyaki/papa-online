@@ -7,6 +7,11 @@ pre-commit:
         - "*.test.js"
       run: npx jest --findRelatedTests {staged_files}
 
+    - name: lint & format
+      glob: "*.{js,mjs,cjs,json,css,html}"
+      run: npx biome check --write --no-errors-on-unmatched {staged_files}
+      stage_fixed: true
+
 pre-push:
   jobs:
     - name: server unit + integration tests

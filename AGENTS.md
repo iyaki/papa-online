@@ -17,8 +17,8 @@ For any change beyond a one-line fix or dependency bump:
 
 See `specs/README.md` for the full workflow.
 
-## Commands
-
+- `npm run lint` — Biome lint + format check (the pre-commit gate).
+- `npm run lint:fix` — auto-fix lint and formatting.
 - `npm run verify:server` — Jest unit + integration tests (fast, ~seconds).
 - `npm run verify` — server tests + Playwright e2e; boots the server itself.
 - `cd server && npm test -- --watch` — watch mode for iteration.
@@ -42,8 +42,8 @@ done.
 
 ## Repo facts
 
-- Vanilla JS: no build step, no linter/formatter — don't introduce one
-  unprompted.
+- Vanilla JS: no build step. Code style and lint are enforced by Biome —
+  `npm run lint` (the pre-commit hook auto-fixes staged files).
 - Docs `README.md`/`TESTING.md` are Spanish; AI-workflow docs (this file,
   `specs/`) are English.
 - Deployment via Docker — see `DEPLOYMENT.md`.

@@ -25,5 +25,5 @@ anything.
 - All shared client code must be loaded via `<script>` tags or ES modules
   as-is.
 - No type checking on client code; correctness relies on tests and review.
-- Repo convention: do not introduce a bundler, framework, or
-  linter/formatter unprompted (see AGENTS.md).
+- Repo convention: do not introduce a bundler or framework unprompted. Since
+  ADR 0008, lint/format is enforced by Biome.
