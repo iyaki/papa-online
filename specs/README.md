@@ -11,7 +11,7 @@ skills CLI (see `skills-lock.json`; refresh with `npx skills update`). The
 skill lives at `.agents/skills/spec-creator/`, symlinked into `.omp/skills/`
 and `.claude/skills/` for agent discovery.
 
-1. Author `specs/<change-name>/spec.md` by invoking the `spec-creator` skill
+1. Author `specs/<change-name>.md` by invoking the `spec-creator` skill
    and following `.agents/skills/spec-creator/SPEC_TEMPLATE.md`: Overview
    (purpose, goals, non-goals, scope), architecture, data model, workflows,
    and an explicit `Verifications` section whose items map to named tests.
@@ -29,12 +29,12 @@ Backfilled specs documenting existing behaviour (retrospective, all
 spec-creator compliant; untested behaviours are listed in each spec's
 Open Questions / Risks section):
 
-- `sessions-and-reconnection/` — token identity, player sessions, my-games list, reconnect re-attachment
-- `room-lifecycle/` — create/join/rejoin, point counts, surrender, empty-room and inactivity cleanup
-- `turn-based-gameplay/` — submit_move gating, move_made, game_sync, client drawing
-- `overlap-detection/` — number placement, line-crossing geometry, collision
-- `game-end/` — game_over, winner/loser, local stats, disconnect semantics
-- `rematch/` — request/accept/reject, game restart, lobby status
+- [`sessions-and-reconnection.md`](./sessions-and-reconnection.md) — token identity, player sessions, my-games list, reconnect re-attachment
+- [`room-lifecycle.md`](./room-lifecycle.md) — create/join/rejoin, point counts, surrender, empty-room and inactivity cleanup
+- [`turn-based-gameplay.md`](./turn-based-gameplay.md) — submit_move gating, move_made, game_sync, client drawing
+- [`overlap-detection.md`](./overlap-detection.md) — number placement, line-crossing geometry, collision
+- [`game-end.md`](./game-end.md) — game_over, winner/loser, local stats, disconnect semantics
+- [`rematch.md`](./rematch.md) — request/accept/reject, game restart, lobby status
 
 When a new spec is complete, add it to this list (the `spec-creator` skill
 requires this too).

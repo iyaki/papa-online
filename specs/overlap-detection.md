@@ -28,7 +28,7 @@ This spec documents both halves exactly as they ship today.
 - No server-side validation of drawn lines: the server trusts the client's collision verdicts; hardening the server against a cheating client is a separate change.
 - Not replacing the shared-endpoint exclusion (`arePointsEqual`, 0.1 tolerance) or the safe-zone mechanism.
 - No change to the 40 px padding or the 40-unit minimum-distance constants.
-- Turn sequencing, progress tracking, room codes, and UUIDs are covered by other specs (`specs/turn-based-gameplay/`, `specs/room-lifecycle/`, `specs/sessions-and-reconnection/`); their tests exist in `server/server.test.js` but are out of scope here.
+- Turn sequencing, progress tracking, room codes, and UUIDs are covered by other specs (`specs/turn-based-gameplay.md`, `specs/room-lifecycle.md`, `specs/sessions-and-reconnection.md`); their tests exist in `server/server.test.js` but are out of scope here.
 
 ### Scope
 
@@ -110,8 +110,8 @@ SafeZone {
 
 Supporting entities (owned by other specs, listed for relationships only):
 
-- `Room` — server-side in-memory object; this spec touches `room.numbers: NumberPoint[]` and `room.lines: LinePath[]` (cleared on rematch, `server/server.js:409-411`). Players, turn state, winner: see `specs/room-lifecycle/`, `specs/turn-based-gameplay/`.
-- `PlayerSession` — UUID token identifying a player; see `specs/sessions-and-reconnection/`. The client persists it in localStorage under `session_token`.
+- `Room` — server-side in-memory object; this spec touches `room.numbers: NumberPoint[]` and `room.lines: LinePath[]` (cleared on rematch, `server/server.js:409-411`). Players, turn state, winner: see `specs/room-lifecycle.md`, `specs/turn-based-gameplay.md`.
+- `PlayerSession` — UUID token identifying a player; see `specs/sessions-and-reconnection.md`. The client persists it in localStorage under `session_token`.
 - Client stats accumulate under the localStorage key `papa_online_stats`.
 
 ### Relationships
@@ -144,7 +144,7 @@ Failure path: a cramped board can exhaust the 100 attempts; the point is then pl
    - Build `safeZone = {x, y, radius: 15}` from the start number (null if not found).
    - Sweep the path against every `room.lines` entry via `doPolylineIntersection(path, existingPath, safeZone)`.
    - Sweep the path against itself (`doPolylineIntersection` on segment pairs with the same safe zone).
-4. Happy path — no intersection: on `mouseup` snapped to the next number, the client emits `submit_move` and turn state advances (see `specs/turn-based-gameplay/`).
+4. Happy path — no intersection: on `mouseup` snapped to the next number, the client emits `submit_move` and turn state advances (see `specs/turn-based-gameplay.md`).
 5. Failure path — intersection found (`client/game.js:155-177`): the client emits
    `game_over` with `{ roomCode, reason: "Cruzó una línea", lastLine: currentLine }`
    (note: `lastLine` carries the **whole** drawn path, not just the crossing segment), shows
@@ -160,7 +160,7 @@ The surface is a Socket.IO event namespace (no REST). Auth: none — any connect
 | `game_over` | client → server | `roomCode: string`, `reason: string` (`"Cruzó una línea"` on collision), `lastLine: {x,y}[]` | Drawing client declares itself the loser after detecting a line crossing |
 | `game_over` | server → clients (room broadcast) | `reason: string`, `loser: token` | Server relays the loss so both clients render the result |
 
-Context events owned by other specs: `submit_move` (turn acceptance, `specs/turn-based-gameplay/`), initial `game state` with `numbers` (`specs/room-lifecycle/`).
+Context events owned by other specs: `submit_move` (turn acceptance, `specs/turn-based-gameplay.md`), initial `game state` with `numbers` (`specs/room-lifecycle.md`).
 
 ## Client SDK Design
 
