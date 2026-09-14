@@ -6,7 +6,9 @@
         "dev": "cd server && npm run dev",
         "start": "cd server && npm start",
         "test": "cd server && npm test",
-        "test:e2e": "playwright test"
+        "test:e2e": "playwright test",
+        "verify:server": "cd server && npm test",
+        "verify": "npm run verify:server && playwright test"
     },
     "devDependencies": {
         "@playwright/test": "^1.63.0",
