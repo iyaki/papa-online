@@ -16,15 +16,16 @@ Papa Online es una versión digital del tradicional juego de papel y lápiz dond
 4. **¡Cuidado!** Si tu línea cruza otra línea (tuya o del oponente), pierdes
 5. **Gana** el último jugador que logre hacer un movimiento válido
 
+Para la guía paso a paso de cada funcionalidad (casos de uso), ver [USE_CASES.md](./docs/USE_CASES.md).
+
 ## ✨ Características
 
 - 🌐 **Multijugador en tiempo real** con Socket.IO
 - 📱 **Mobile-friendly** - juega desde cualquier dispositivo
 - 🎨 **Diseño "sketchy"** con estética de papel y lápiz
 - 📊 **Estadísticas locales** para seguir tu progreso
-- 🔄 **Reconexión automática** - continúa tu partida si pierdes conexión
+- 🎯 **Puntos configurables** (10, 15, 20, 25, 30)
 - ❓ **FAQ integrada** con reglas y ayuda
-- 🎯 **Puntos configurables** (5, 10, 15, 20)
 
 ## 🛠️ Tecnologías
 

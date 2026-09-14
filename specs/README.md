@@ -2,6 +2,8 @@
 
 Spec-driven development (SDD) for papa-online. Every change beyond a one-line
 fix or dependency bump starts here, as a spec, before any implementation code.
+For the player-facing steps of each feature as they work today (as opposed to
+the intended behaviour recorded here), see [`USE_CASES.md`](../docs/USE_CASES.md).
 
 ## Workflow
 
