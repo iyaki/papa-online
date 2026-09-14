@@ -5,24 +5,29 @@ fix or dependency bump starts here, as a spec, before any implementation code.
 
 ## Workflow
 
-1. Copy `_TEMPLATE/` to `specs/<change-name>/`.
-2. Fill in `spec.md`: problem, numbered requirements (R1, R2, ...), acceptance
-   criteria (each mapped to a requirement and verifiable by a named test), and
-   explicit out-of-scope items.
-3. Get the spec reviewed/approved before implementing.
-4. Generate `tasks.md` from the spec. Do not add tasks without a matching
-   requirement.
-5. Implement test-first: the first task is always writing the failing tests for
-   each acceptance criterion. Mark tasks done as you go.
-6. If scope shifts mid-change, update the spec first — the spec is the source
+Specs are authored with the `spec-creator` skill from
+[iyaki/specralph](https://github.com/iyaki/specralph), installed with Vercel's
+skills CLI (see `skills-lock.json`; refresh with `npx skills update`). The
+skill lives at `.agents/skills/spec-creator/`, symlinked into `.omp/skills/`
+and `.claude/skills/` for agent discovery.
+
+1. Author `specs/<change-name>/spec.md` by invoking the `spec-creator` skill
+   and following `.agents/skills/spec-creator/SPEC_TEMPLATE.md`: Overview
+   (purpose, goals, non-goals, scope), architecture, data model, workflows,
+   and an explicit `Verifications` section whose items map to named tests.
+2. Set `Status: Proposed` and get the spec approved before implementing.
+3. Implement test-first: the failing tests for the spec's Verifications are
+   written before the implementation code.
+4. Flip `Status: Implemented` when `npm run verify` is green and every
+   Verifications item lists a passing test.
+5. If scope shifts mid-change, update the spec first — the spec is the source
    of truth until the change is merged.
-7. A change is done when `npm run verify` is green and every acceptance
-   criterion lists a passing test.
 
 ## Feature specs
 
-Backfilled specs documenting existing behaviour (retrospective; `[ ]` tasks
-there are real coverage gaps, not pending work):
+Backfilled specs documenting existing behaviour (retrospective; written in
+the pre-specralph format, kept as-is; `[ ]` tasks there are real coverage
+gaps, not pending work):
 
 - `sessions-and-reconnection/` — token identity, player sessions, my-games list, reconnect re-attachment
 - `room-lifecycle/` — create/join/rejoin, point counts, surrender, empty-room and inactivity cleanup
@@ -30,6 +35,9 @@ there are real coverage gaps, not pending work):
 - `overlap-detection/` — number placement, line-crossing geometry, collision
 - `game-end/` — game_over, winner/loser, local stats, disconnect semantics
 - `rematch/` — request/accept/reject, game restart, lobby status
+
+When a new spec is complete, add it to this list (the `spec-creator` skill
+requires this too).
 
 ## Lifecycle
 

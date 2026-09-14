@@ -4,7 +4,8 @@ Date: 2026-09-14
 
 ## Status
 
-Accepted
+Accepted — spec-authoring mechanics superseded by ADR 0007 (spec-creator
+skill); the SDD process and test gates stand.
 
 ## Context
 
