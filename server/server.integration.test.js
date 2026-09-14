@@ -328,12 +328,15 @@ describe('Papa Online Server - Integration Tests', () => {
             autoConnect: false
         });
 
+        // Server pushes my_games_list on create_room AND on get_my_games;
+        // resolve on the first non-empty list only (CI-timing dependent otherwise)
+        let resolved = false;
         clientSocket1.on('my_games_list', (games) => {
-            if (games.length > 0) {
-                expect(games[0]).toHaveProperty('roomCode');
-                expect(games[0]).toHaveProperty('opponentName');
-                done();
-            }
+            if (resolved || games.length === 0) return;
+            resolved = true;
+            expect(games[0]).toHaveProperty('roomCode');
+            expect(games[0]).toHaveProperty('opponentName');
+            done();
         });
 
         clientSocket1.on('room_created', () => {
