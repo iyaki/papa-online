@@ -1,6 +1,6 @@
 services:
   papa-online:
-    build: .
+    image: ghcr.io/iyaki/papa-online:latest
     container_name: papa-online-app
     restart: unless-stopped
     ports:
