@@ -98,7 +98,7 @@ needed.
 3. Options shown to both: **🔄 Pedir Revancha**, **Volver al Lobby**, and
    **📸 Guardar Recuerdo** (see UC-06, UC-09 and UC-13).
 
-## UC-06: Request a rematch
+## UC-06: Request a rematch (and respond from anywhere)
 
 **Actor**: either player, from the result screen.
 
@@ -112,6 +112,11 @@ needed.
    "Siguiente: 2"; the player who **accepted** moves first.
 4. If they reject: the requester is notified of the rejection and both stay
    on the result screen.
+5. If the opponent is in the lobby, the "Mis Partidas" row shows "¡Revancha
+   pedida!" with **✓ Aceptar** / **✗ Rechazar** inline buttons. Accepting
+   enters the new game immediately (the accepting player moves first);
+   rejecting keeps both players where they are and the row returns to the
+   finished-game status.
 
 ## UC-07: Leave to the menu and come back
 
@@ -126,7 +131,8 @@ the room.
    "¡Revancha pedida!" or "Esperando revancha...". The list is sorted so the
    games that need the player's action come first.
 3. Press the room's row to re-enter: the full state (numbers, lines, turn)
-   is re-synced with the server.
+   is re-synced with the server. Rows with a pending rematch offer the
+   inline accept/reject described in UC-06.
 
 ## UC-08: Reconnect to a game
 

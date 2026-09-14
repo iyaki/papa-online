@@ -19,13 +19,13 @@ Job to be done: "I just lost a close game and want an immediate re-run against t
 - Rejection notifies the requester and leaves the finished game untouched.
 - Rematch state survives page reloads and reconnections via `game_sync`.
 - The lobby shows who requested the rematch and ranks opponent-pending rematches highest.
+- The opponent can accept or reject a pending rematch directly from the "Mis Partidas" lobby, without re-entering the game screen.
 
 ### Non-Goals
 
 - Swapping turns randomly or by a loser-starts rule on rematch (current rule: accepting player always starts).
 - Rematch when a player has left the room / disconnected (rematch requires both players' current socket sessions).
 - Multi-round rematch history or scoring across rematches.
-- Rejecting from the lobby without an active game screen.
 
 ### Scope
 
@@ -34,11 +34,12 @@ The feature spans two server handlers, four client socket handlers, and the lobb
 | Id | Requirement |
 |----|-------------|
 | R1 | A player in a finished game can request a rematch (`request_rematch`). The server stores the requester's token in `room.rematchRequestedBy`, emits `rematch_requested` (no payload) to the opponent, and emits `my_games_update` to both players so the lobby shows the pending state. |
-| R2 | The opponent can accept via `respond_rematch` with `accept: true`. The server regenerates numbers with the same point count (`pointCount = room.numbers.length`, `generateNumbers(pointCount, 600, 800)`), clears `lines`, resets `currentNumber` to 1, clears `winner` / `loser` / `rematchRequestedBy`, sets `currentTurn` to the ACCEPTING player's socket id, emits `game_restarted` (payload `{ numbers, currentTurn }`) to the room, and emits `my_games_update` to both players. |
+| R2 | The opponent can accept via `respond_rematch` with `accept: true` (from the game-over screen or the lobby, R7). The server regenerates numbers with the same point count (`pointCount = room.numbers.length`, `generateNumbers(pointCount, 600, 800)`), clears `lines`, resets `currentNumber` to 1, clears `winner` / `loser` / `rematchRequestedBy`, sets `currentTurn` to the ACCEPTING player's socket id, emits `game_restarted` (payload `{ roomCode, numbers, currentTurn }`) to the room, and emits `my_games_update` to both players. |
 | R3 | The opponent can reject via `respond_rematch` with `accept: false`. The server clears `room.rematchRequestedBy`, emits `rematch_rejected` (no payload) to the requester, and emits `my_games_update` to both players. The game stays in its finished state. |
 | R4 | Client shows the rematch UI after game over (`#rematch-btn`), a "waiting for response" state for the requester, and an accept/reject prompt (`#rematch-request-container` with `#accept-rematch-btn` / `#reject-rematch-btn`) for the opponent, driven by the `rematch_requested` / `rematch_rejected` / `game_restarted` socket events in `client/main.js`. |
 | R5 | On reconnection (`game_sync`), the client restores the rematch UI state from the `rematchRequestedBy` field: the requester sees a disabled "Esperando respuesta..." button; the opponent sees the accept/reject prompt. |
 | R6 | The my-games lobby renders the rematch status for finished games ("Esperando revancha..." if I requested, "¡Revancha pedida!" if the opponent requested) and sorts games with an opponent-pending rematch to the top (sort priority 3). |
+| R7 | The my-games lobby renders inline "✓ Aceptar" / "✗ Rechazar" controls (CSS classes .accept-rematch-btn / .reject-rematch-btn) on any finished-game row whose rematchRequestedBy is the opponent's token. Accept emits respond_rematch { accept: true } and enters the game (enterGame); reject emits respond_rematch { accept: false } and leaves the player in the lobby. |
 
 ## Architecture
 
@@ -98,7 +99,7 @@ Rematch logic lives entirely in `server/server.js` (handlers `request_rematch`, 
 ### Data flow summary
 
 - **Request:** click `#rematch-btn` → `request_rematch { roomCode }` → server sets `room.rematchRequestedBy = <requester token>` and bumps `lastActivity` → `rematch_requested` to opponent + `my_games_update` to both → opponent's client reveals the prompt; both clients re-fetch the lobby via `get_my_games`.
-- **Accept:** `respond_rematch { roomCode, accept: true }` → server resets the room in place (new numbers, same count; `currentTurn` = accepting socket id) → `game_restarted { numbers, currentTurn }` to the room → both clients hide the game-over screen and call `game.startGame()` → `my_games_update` clears the pending flag in both lobbies.
+- **Accept:** `respond_rematch { roomCode, accept: true }` (from the game-over screen or the lobby, R7) → server resets the room in place (new numbers, same count; `currentTurn` = accepting socket id) → `game_restarted { roomCode, numbers, currentTurn }` to the room → both clients hide the game-over screen and call `game.startGame()` (a lobby acceptor instead enters the game via `enterGame` and converges on the same restart) → `my_games_update` clears the pending flag in both lobbies.
 - **Reject:** `respond_rematch { roomCode, accept: false }` → server clears `rematchRequestedBy` → `rematch_rejected` to requester + `my_games_update` to both → requester's client shows the rejection message and re-enables `#rematch-btn`; game stays finished.
 - **Reconnect:** client enters a game (`enterGame` emits `request_game_sync`) → server replies `game_sync` including `rematchRequestedBy` → client re-derives requester/opponent UI by comparing `rematchRequestedBy` with its `session_token`.
 - **Lobby:** every rematch state change ends with `my_games_update` to both players; each client answers it with `get_my_games`, and the server's `sendMyGames` includes `rematchRequestedBy` per game so the lobby can render status and sort priority.
@@ -169,6 +170,12 @@ There is no database and no SQL schema: `rooms` and `playerSessions` are plain i
 2. Server: `room.rematchRequestedBy = null`; emits `rematch_rejected` (no payload) to Player A (the requester); emits `my_games_update` to both players. The room keeps its finished state (`winner`/`loser` intact).
 3. Player A's client shows `#rematch-status` "El oponente rechazó la revancha." (red), re-enables `#rematch-btn` ("Pedir Revancha"), clears `game.rematchRequestedBy`. A may request again.
 
+**Accept/reject a rematch from the lobby (R7, alternative path)**
+
+1. The opponent is in the lobby when the request arrives (they left via "Volver al Lobby" after the game ended, or never re-entered). The "Mis Partidas" row shows "¡Revancha pedida!" plus inline **✓ Aceptar** / **✗ Rechazar** buttons (rendered when `isGameOver && rematchRequestedBy` is set and is not the viewer's token).
+2. Clicking **✓ Aceptar** emits `respond_rematch { roomCode, accept: true }` and the client calls `enterGame(roomCode, opponentName)`; the subsequent `game_sync` / `game_restarted` populate the screen (the accepting player moves first, as in R2).
+3. Clicking **✗ Rechazar** emits `respond_rematch { roomCode, accept: false }`; `my_games_update` re-renders the row as a plain finished game, and the requester's game-over screen shows the rejection as in R3.
+
 **Restore rematch state on reconnect (R5)**
 
 1. The client re-enters a game (e.g. from the lobby); `enterGame` emits `request_game_sync { roomCode }`. Server-side, a reconnecting socket with a known token has already been re-joined to its rooms and had its player `id` (and `currentTurn`, if it was theirs) remapped to the new socket id.
@@ -202,7 +209,7 @@ Server → Client events:
 |-------|---------|---------|
 | `rematch_requested` | none | Sent to the opponent: show the accept/reject prompt. (R1, R4) |
 | `rematch_rejected` | none | Sent to the requester: show rejection message, re-enable request button. (R3, R4) |
-| `game_restarted` | `{ numbers: [{value,x,y}], currentTurn: socketId }` | Sent to the room: replace the finished game with a fresh one. (R2, R4) |
+| `game_restarted` | `{ roomCode, numbers: [{value,x,y}], currentTurn: socketId }` | Sent to the room: replace the finished game with a fresh one. The client ignores restarts for rooms other than the one on screen. (R2, R4, R7) |
 | `my_games_update` | none | Sent to both players on every rematch state change: signal to re-fetch the lobby. (R1–R3, R6) |
 | `game_sync` | `{ roomCode, numbers, lines, currentNumber, currentTurn, isGameOver, winner, loser, players, rematchRequestedBy }` | Full room state for (re)entry; `rematchRequestedBy` drives rematch UI restore. (R5) |
 | `my_games_list` | `[{ roomCode, opponentName, isMyTurn, isGameOver, winner, loser, rematchRequestedBy }]` | Lobby payload; `isGameOver` is `!!winner`; `rematchRequestedBy` feeds status text and sort. (R6) |
@@ -228,6 +235,7 @@ Event wiring:
 | `game_restarted` | game-over screen, rematch elements | Hide game-over, reset rematch UI, clear local state, `game.startGame(numbers, currentTurn)`. |
 | `game_sync` (with `isGameOver`) | rematch elements | Restore requester/opponent branch from `rematchRequestedBy` vs `session_token`. |
 | `my_games_update` | lobby list | Re-emit `get_my_games`; `my_games_list` re-renders statuses and sort. |
+| Lobby row `.accept-rematch-btn` / `.reject-rematch-btn` click | `#my-games-list` row buttons | Emit `respond_rematch` for that row's room; accept also enters the game via `enterGame` (R7). |
 
 Behaviour expectations: UI updates are optimistic and fire-and-forget — there is no retry, no event queue, no dedup. If a socket message is lost, state recovers only via a fresh `game_sync` (re-entering the game) or the next `my_games_list` render.
 
@@ -276,7 +284,7 @@ The server does not enforce that only the requester requests or only the non-req
 Untested behaviours (each was an unchecked acceptance criterion in the backfilled spec; none is covered by any test today):
 
 - **Rejection path untested.** No test exercises `respond_rematch { accept: false }`: that `rematchRequestedBy` is cleared, the requester receives `rematch_rejected`, both players get `my_games_update`, and the finished game stays intact. (Was AC5.)
-- **Server-side rematch handlers have no integration test.** Room-state mutation is unverified: `rematchRequestedBy` storage on request and clearing on respond, number regeneration with the same point count, reset of `lines`/`currentNumber`/`winner`/`loser`, `currentTurn` set to the accepting player's socket id, and the `game_restarted` / `rematch_rejected` emissions. (Was AC6.)
+- **Reject-path server mutation has no integration test.** The accept path now has one: `game_restarted` carries `roomCode`, numbers regenerate at the same point count, and `currentTurn` is the accepting player's socket id (see Verifications). The reject side (`rematchRequestedBy` clearing, `rematch_rejected` emit, `my_games_update` fan-out) remains unverified. (Was AC6.)
 - **Reconnect rematch-state restore untested.** No test covers re-entering a finished game with a pending rematch and verifying the requester/opponent UI branches restored from `game_sync`'s `rematchRequestedBy`. (Was AC7.)
 - **Lobby rematch status/sort untested.** No test verifies the status text ("Esperando revancha..." / "¡Revancha pedida!") nor that opponent-pending rematches sort to the top (priority 3). (Was AC8.)
 
@@ -291,6 +299,9 @@ Design risks observed in code (accepted for now, documented so they are visible)
 - After the requester clicks `#rematch-btn`, the button is disabled showing "Esperando respuesta", `#rematch-status` shows "Esperando a que el oponente acepte", and the opponent's `#rematch-request-container` becomes visible — PASS: `Full Rematch Flow (Request -> Accept -> New Game)` (`tests/e2e/rematch.spec.js`).
 - After the opponent clicks `#accept-rematch-btn`, both game-over screens hide, the game restarts with new numbers, and the accepting player holds the turn (`my-turn` for the acceptor, `opponent-turn` for the requester) — PASS: `Full Rematch Flow (Request -> Accept -> New Game)` (`tests/e2e/rematch.spec.js`).
 - After acceptance both players can play again (a valid move is made in the new game) — PASS: `Full Rematch Flow (Request -> Accept -> New Game)` (`tests/e2e/rematch.spec.js`).
+- The opponent in the lobby sees inline "✓ Aceptar" / "✗ Rechazar" buttons on the pending-rematch row; clicking ✓ Aceptar drops them into the restarted game holding the turn and both players can move again — PASS: `Opponent accepts rematch from lobby` (`tests/e2e/rematch.spec.js`).
+- Clicking ✗ Rechazar in the lobby notifies the requester ("El oponente rechazó la revancha."), re-enables their `#rematch-btn`, and the lobby row loses its pending controls — PASS: `Opponent rejects rematch from lobby` (`tests/e2e/rematch.spec.js`).
+- `game_restarted` carries `roomCode` (plus regenerated `numbers` of the original length and `currentTurn` set to the accepting player's socket id) — PASS: `rematch > emits game_restarted with roomCode, regenerated numbers, and currentTurn set to the accepting player` (`server/server.integration.test.js`).
 
 ## Appendices
 
@@ -304,4 +315,3 @@ Design risks observed in code (accepted for now, documented so they are visible)
 
 - Close the tested-behaviour gaps listed under Open Questions / Risks: a rejection-path integration test, a `request_rematch`/`respond_rematch` integration suite, a reconnect-restore e2e, and a lobby status/sort e2e.
 - Loser-starts (or alternating) turn rule on rematch.
-- Rejecting a rematch from the lobby without re-entering the game screen.
