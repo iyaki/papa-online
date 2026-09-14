@@ -6,7 +6,7 @@ Guidance for AI agents (and humans) working in this repo.
 
 For any change beyond a one-line fix or dependency bump:
 
-1. Author `specs/<change-name>/spec.md` with the `spec-creator` skill
+1. Author `specs/<change-name>.md` with the `spec-creator` skill
    (from [iyaki/specralph](https://github.com/iyaki/specralph), installed at
    `.agents/skills/spec-creator/`), following its `SPEC_TEMPLATE.md`.
 2. Do not write implementation code until the spec exists and is approved.

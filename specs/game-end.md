@@ -20,8 +20,8 @@ When a player makes a losing move (crosses an existing line) or otherwise ends t
 ### Non-Goals
 
 - Server-side disconnect-loss: a raw socket disconnect during an active game does NOT end the game (the `disconnect` handler only logs). Would be a new change.
-- Rematch flow after game over — covered by `specs/rematch/`.
-- Room cleanup/expiry via `lastActivity` — covered by `specs/room-lifecycle/`.
+- Rematch flow after game over — covered by `specs/rematch.md`.
+- Room cleanup/expiry via `lastActivity` — covered by `specs/room-lifecycle.md`.
 - Server-side anti-cheat: the server trusts whichever client claims `game_over`; no move validation on game-over emission (see Security Considerations).
 
 ### Scope
@@ -192,5 +192,5 @@ Trust model: any connected client may emit any event. Tokens (`session_token` UU
 ## Appendices
 
 - **Misleading e2e test titles**: the two `tests/e2e/win.spec.js` titles say "Player X crashes", but the tests actually simulate a losing move (drawing a line that crosses an existing one), not a socket disconnection. The titles are kept verbatim because citations must match the test files.
-- **Compatibility**: `game_over` payload shape (`{ roomCode, reason, lastLine? }` in, `{ reason, loser, winner }` out) is the contract consumed by both clients and the rematch flow; changing it requires updating `specs/rematch/` consumers.
+- **Compatibility**: `game_over` payload shape (`{ roomCode, reason, lastLine? }` in, `{ reason, loser, winner }` out) is the contract consumed by both clients and the rematch flow; changing it requires updating `specs/rematch.md` consumers.
 - **Future considerations**: server-side disconnect-loss (declare survivor winner after a grace period) and server-side game-over validation are the natural next changes; both need this spec as the baseline.
