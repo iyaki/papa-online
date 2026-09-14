@@ -37,6 +37,7 @@ Open Questions / Risks section):
 - [`overlap-detection.md`](./overlap-detection.md) — number placement, line-crossing geometry, collision
 - [`game-end.md`](./game-end.md) — game_over, winner/loser, local stats, disconnect semantics
 - [`rematch.md`](./rematch.md) — request/accept/reject, game restart, lobby status
+- [`auto-complete-stroke.md`](./auto-complete-stroke.md) — stroke ends automatically when it reaches the target number (fixes #15)
 
 When a new spec is complete, add it to this list (the `spec-creator` skill
 requires this too).

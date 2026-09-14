@@ -158,39 +158,54 @@ export class Game {
                     lastLine: this.currentLine,
                 });
                 this.gameOver('¡Cruzaste una línea! Perdiste.');
+                return;
+            }
+
+            // Reached the target number: complete the stroke automatically
+            const nextNum = this.numbers.find((n) => n.value === this.currentNumber + 1);
+            if (nextNum && this.isNear(pos, nextNum)) {
+                this.finishStroke();
+                return;
             }
 
             this.draw();
         }
     }
 
-    handleMouseUp(e) {
+    finishStroke() {
+        const nextNum = this.numbers.find((n) => n.value === this.currentNumber + 1);
+
+        // Snap to center
+        this.currentLine.push({ x: nextNum.x, y: nextNum.y });
+
+        if (this.checkCollisions(this.currentLine)) {
+            this.socket.emit('game_over', {
+                roomCode: this.roomCode,
+                reason: 'Cruzó una línea',
+                lastLine: this.currentLine,
+            });
+            this.gameOver('¡Cruzaste una línea! Perdiste.');
+            return;
+        }
+
+        // Valid Move
+        this.socket.emit('submit_move', {
+            roomCode: this.roomCode,
+            line: this.currentLine,
+        });
+        this.currentLine = null;
+        this.isMyTurn = false;
+        this.draw();
+    }
+
+    handleMouseUp() {
         if (!this.currentLine || this.isGameOver) return;
 
         const lastPoint = this.currentLine[this.currentLine.length - 1];
         const nextNum = this.numbers.find((n) => n.value === this.currentNumber + 1);
 
         if (nextNum && this.isNear(lastPoint, nextNum)) {
-            // Snap to center
-            this.currentLine.push({ x: nextNum.x, y: nextNum.y });
-
-            if (this.checkCollisions(this.currentLine)) {
-                this.socket.emit('game_over', {
-                    roomCode: this.roomCode,
-                    reason: 'Cruzó una línea',
-                    lastLine: this.currentLine,
-                });
-                this.gameOver('¡Cruzaste una línea! Perdiste.');
-            } else {
-                // Valid Move
-                this.socket.emit('submit_move', {
-                    roomCode: this.roomCode,
-                    line: this.currentLine,
-                });
-                this.currentLine = null;
-                this.isMyTurn = false;
-                this.draw();
-            }
+            this.finishStroke();
         } else {
             // Invalid move (didn't reach target), reset
             this.currentLine = null;
