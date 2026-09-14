@@ -11,14 +11,14 @@ Accepted
 The application has been in Spanish since the first commit: UI strings,
 alerts, the FAQ, `lang="es"` and `og:locale es_AR` in `client/index.html`.
 The audience is Spanish-speaking (the project credits an Argentine idea and
-author), and the human-facing docs (README, TESTING) follow AGENTS.md's
-convention of being written in Spanish.
+author). Repository documentation was historically written in Spanish and has
+since been unified in English.
 
-But nothing documented the rule. Meanwhile the repo split its *documentation*
-languages (Spanish human docs, English AI-workflow docs), which makes it easy
-for a contributor or an agent to assume the app strings should follow the
-English side — or to introduce English UI text in a PR without anyone
-pointing at a written decision.
+But nothing documented the app-language rule. A docs-language convention alone
+does not cover user-facing strings, which made it easy for a contributor or an
+agent to assume the app should simply follow whatever the docs use — or to
+introduce English UI text in a PR without anyone pointing at a written
+decision.
 
 ## Decision
 
@@ -28,10 +28,10 @@ The player-facing application language is **Spanish**.
   alerts and confirms, socket-driven notifications, the FAQ, the exported
   souvenir image text, and error messages.
 - `client/index.html` keeps `lang="es"`; new screens and metadata inherit it.
-- Code identifiers, code comments, commit messages, and AI-workflow docs
-  (AGENTS.md, `specs/`, `docs/adr/`) remain in English, per the existing
-  AGENTS.md split. `docs/USE_CASES.md` is English but quotes on-screen
-  labels verbatim in Spanish.
+- Code identifiers, code comments, commit messages, and all repository
+  documentation (README, TESTING, DEPLOYMENT, AGENTS.md, `specs/`, `docs/`)
+  are written in English. Documentation quotes on-screen labels verbatim in
+  Spanish when describing the UI.
 - No i18n framework: one hardcoded language. Introducing localization would
   need a new ADR superseding this one.
 

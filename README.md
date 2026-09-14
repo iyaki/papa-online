@@ -1,82 +1,82 @@
 # 🥔 Papa Online
 
-Juego multijugador en tiempo real basado en el clásico "Juego de la Papa" o "Números".
+Real-time multiplayer game based on the classic "Juego de la Papa" or "Números" paper game.
 
-**[▶️ Jugar Ahora](#)** <!-- Agregar link cuando esté desplegado -->
+**[▶️ Play Now](#)** <!-- Add link once deployed -->
 
-## 📖 Descripción
+## 📖 Description
 
-Papa Online es una versión digital del tradicional juego de papel y lápiz donde dos jugadores compiten para conectar números en secuencia sin que sus líneas se crucen. El último jugador que pueda hacer un movimiento válido, gana.
+Papa Online is a digital version of the traditional paper-and-pencil game where two players compete to connect numbers in sequence without their lines crossing. The last player able to make a valid move wins.
 
-## 🎮 Cómo Jugar
+## 🎮 How to Play
 
-1. **Crear o unirse a una sala** con un código de 6 caracteres
-2. **Esperar al oponente** para comenzar
-3. **Conectar los números en orden** (1→2→3...) dibujando líneas
-4. **¡Cuidado!** Si tu línea cruza otra línea (tuya o del oponente), pierdes
-5. **Gana** el último jugador que logre hacer un movimiento válido
+1. **Create or join a room** with a 6-character code
+2. **Wait for the opponent** to start
+3. **Connect the numbers in order** (1→2→3...) by drawing lines
+4. **Careful!** If your line crosses another line (yours or the opponent's), you lose
+5. The last player who manages to make a valid move **wins**
 
-Para la guía paso a paso de cada funcionalidad (casos de uso), ver [USE_CASES.md](./docs/USE_CASES.md).
+For the step-by-step guide to each feature (use cases), see [USE_CASES.md](./docs/USE_CASES.md).
 
-## ✨ Características
+## ✨ Features
 
-- 🌐 **Multijugador en tiempo real** con Socket.IO
-- 📱 **Mobile-friendly** - juega desde cualquier dispositivo
-- 🎨 **Diseño "sketchy"** con estética de papel y lápiz
-- 📊 **Estadísticas locales** para seguir tu progreso
-- 🎯 **Puntos configurables** (10, 15, 20, 25, 30)
-- ❓ **FAQ integrada** con reglas y ayuda
+- 🌐 **Real-time multiplayer** with Socket.IO
+- 📱 **Mobile-friendly** - play from any device
+- 🎨 **"Sketchy" design** with a paper-and-pencil look
+- 📊 **Local statistics** to track your progress
+- 🎯 **Configurable points** (10, 15, 20, 25, 30)
+- ❓ **Built-in FAQ** with rules and help
 
-## 🛠️ Tecnologías
+## 🛠️ Technologies
 
 - **Frontend**: HTML, CSS (Vanilla), JavaScript
 - **Backend**: Node.js + Express
-- **Comunicación**: Socket.IO
+- **Communication**: Socket.IO
 - **Testing**: Jest
 - **CI/CD**: GitHub Actions
 - **Deployment**: Docker
 
-## 🚀 Instalación Local
+## 🚀 Local Installation
 
 ```bash
-# Clonar repositorio
+# Clone the repository
 git clone https://github.com/iyaki/papa-online.git
 cd papa-online
 
-# Instalar dependencias
+# Install dependencies
 cd server && npm install
 
-# Ejecutar en modo desarrollo
+# Run in development mode
 npm run dev
 
-# Abrir navegador en http://localhost:3000
+# Open your browser at http://localhost:3000
 ```
 
 ## 🧪 Testing
 
 ```bash
-# Ejecutar todos los tests
+# Run all tests
 npm test
 
-# Con coverage
+# With coverage
 npm test -- --coverage
 ```
 
-**Cobertura actual**: 12 tests (7 unit + 5 integration) ✅
+**Current coverage**: 14 tests (7 unit + 7 integration) ✅
 
-## 🐳 Deployment con Docker
+## 🐳 Docker Deployment
 
 ```bash
-# Build y Run
+# Build and run
 docker-compose up -d
 
-# Ver logs
+# View logs
 docker-compose logs -f
 ```
 
-Ver [DEPLOYMENT.md](./DEPLOYMENT.md) para guía completa de deployment en VPS.
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for the full VPS deployment guide.
 
-## 📁 Estructura del Proyecto
+## 📁 Project Structure
 
 ```
 papa-online/
@@ -95,37 +95,37 @@ papa-online/
 └── DEPLOYMENT.md
 ```
 
-## 🤝 Contribuir
+## 🤝 Contributing
 
-Las contribuciones son bienvenidas. Por favor:
+Contributions are welcome. Please:
 
-Para el flujo de trabajo spec-driven (obligatorio para agentes de IA), ver [AGENTS.md](./AGENTS.md).
+For the spec-driven workflow (mandatory for AI agents), see [AGENTS.md](./AGENTS.md).
 
-1. Fork el proyecto
-2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
+1. Fork the project
+2. Create a branch for your feature (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-## 📝 Licencia
+## 📝 License
 
-Este proyecto está bajo la licencia MIT.
+This project is licensed under the MIT license.
 
-## 👤 Autor
+## 👤 Author
 
 **iyaki**
 - Website: [iyaki.ar](https://iyaki.ar/)
 - GitHub: [@iyaki](https://github.com/iyaki)
 
-## 🎯 Créditos
+## 🎯 Credits
 
-- **Idea original**: Lucas Pacheco
-- **Desarrollo**: iyaki
+- **Original idea**: Lucas Pacheco
+- **Development**: iyaki
 
-## 🐛 Reportar Bugs
+## 🐛 Report Bugs
 
-¿Encontraste un bug? Por favor repórtalo a: contact@iyaki.ar
+Found a bug? Please report it to: contact@iyaki.ar
 
 ---
 
-Hecho con 🧉 por [iyaki](https://iyaki.ar/)
+Made with 🧉 by [iyaki](https://iyaki.ar/)

@@ -44,8 +44,8 @@ done.
 
 - Vanilla JS: no build step. Code style and lint are enforced by Biome —
   `npm run lint` (the pre-commit hook auto-fixes staged files).
-- Docs `README.md`/`TESTING.md` are Spanish; AI-workflow docs (this file,
-  `specs/`) are English.
+- All repository docs are English (README, TESTING, DEPLOYMENT, `specs/`,
+  `docs/`).
 - The application UI language is Spanish (all user-visible strings) — see
   [ADR 0009](docs/adr/0009-application-language-spanish.md).
 - Deployment via Docker — see `DEPLOYMENT.md`.

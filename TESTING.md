@@ -1,70 +1,82 @@
 # Testing Guide - Papa Online
 
-## Configuración de Tests
+## Test Configuration
 
-Este proyecto utiliza **Jest** como framework de testing para asegurar la integridad del código durante el desarrollo.
+This project uses **Jest** as the testing framework to ensure code integrity during development.
 
-## Ejecutar Tests
+## Running Tests
 
-Desde la raíz del proyecto:
+From the project root:
 
 ```bash
 npm test
 ```
 
-Desde el directorio del servidor:
+From the server directory:
 
 ```bash
 cd server
 npm test
 ```
 
-## Cobertura de Tests
+## Test Coverage
 
-**Cobertura actual**: 14 tests (7 unit + 7 integration) | Coverage: 75% ✅
+**Current coverage**: 14 tests (7 unit + 7 integration) | Coverage: 75% ✅
 
 ### ✅ Unit Tests (7 tests)
 
-#### Funciones de Gestión de Salas
-- **generateNumbers**: Verificación de generación correcta de puntos
-- **checkOverlap**: Detección de puntos superpuestos
-- **Generación de códigos de sala**: Validación de formato de 6 caracteres alfanuméricos
+#### Room Management Functions
+- **generateNumbers**: Verifies correct generation of points
+- **checkOverlap**: Detects overlapping points
+- **Room code generation**: Validates the 6-character alphanumeric format
 
-#### Lógica del Juego
-- **Validación de secuencia de turnos**: Verificación de números correctos
-- **Seguimiento de progreso**: Estado de completitud del juego
-- **Alternancia de turnos**: Cambio correcto entre jugadores
+#### Game Logic
+- **Turn sequence validation**: Verifies correct numbers
+- **Progress tracking**: Tracks game completeness
+- **Turn alternation**: Correct switching between players
 
-#### Gestión de Sesiones
-- **Generación de UUID**: Validación de formato UUID v4
+#### Session Management
+- **UUID generation**: Validates UUID v4 format
 
 ### ✅ Integration Tests (7 tests)
 
-#### Comunicación Socket.IO
-- **Conexión con autenticación**: Verificación de token en handshake
-- **Creación de sala**: Emisión de eventos `room_created` y `game_start`
-- **Unión a sala**: Sincronización de dos jugadores en la misma sala
-- **Movimientos por turnos**: Validación de `move_made` y cambio de turno
-- **Game Over**: Correcta identificación de ganador y perdedor
-- **Surrender**: Validación de evento `leave_room` y `player_left`
-- **My Games List**: Verificación de lista de partidas activas
+#### Socket.IO Communication
+- **Authenticated connection**: Token verification on handshake
+- **Room creation**: Emits `room_created` and `game_start` events
+- **Joining a room**: Syncs two players in the same room
+- **Turn-based moves**: Validates `move_made` and turn switching
+- **Game Over**: Correctly identifies winner and loser
+- **Surrender**: Validates `leave_room` and `player_left` events
+- **My Games List**: Verifies the list of active games
+
+### ✅ E2E Tests (Playwright)
+
+User-visible flows are covered by the Playwright suite in `tests/e2e/`
+(helpers in `tests/e2e/utils.js`):
+
+- **Basic flow**: Player 1 creates a room, Player 2 joins
+- **Win/loss scenarios**: collision moves and turn switching
+- **Rematch flow**: request → accept → new game
+
+`npm run verify` builds everything needed and runs server tests + e2e
+(the Playwright config auto-starts the server on port 3000).
 
 ## GitHub Actions - CI/CD
 
-El proyecto cuenta con GitHub Actions configurado para ejecutar los tests automáticamente en:
-- Cada push a las ramas `main` o `master`
-- Cada Pull Request
-- Manualmente mediante workflow_dispatch
+The project has GitHub Actions configured to run the tests automatically on:
+- Every push to the `main` or `master` branches
+- Every Pull Request
+- Manually via workflow_dispatch
 
-Los tests se ejecutan en:
+Tests run on:
 - Node.js 18.x
 - Node.js 20.x
 
-**Ubicación del workflow**: `.github/workflows/test.yml`
+**Workflow location**: `.github/workflows/test.yml`
 
-## Resultados Esperados
+## Expected Results
 
-Cuando ejecutes `npm test`, deberías ver:
+When you run `npm test`, you should see:
 
 ```
 PASS  ./server.test.js
@@ -83,9 +95,9 @@ Test Suites: 1 passed, 1 total
 Tests:       7 passed, 7 total
 ```
 
-## Agregar Nuevos Tests
+## Adding New Tests
 
-Para agregar tests adicionales, edita `server/server.test.js` siguiendo el patrón existente:
+To add tests, edit `server/server.test.js` following the existing pattern:
 
 ```javascript
 describe('Feature Name', () => {
@@ -102,22 +114,25 @@ describe('Feature Name', () => {
 });
 ```
 
-## Próximos Pasos para Testing
+## Next Steps for Testing
 
-1. **Tests E2E**: Implementar tests de extremo a extremo con Playwright
-2. **Tests de Detección de Colisiones**: Validar la lógica de intersección de líneas
-3. **Tests de Reconexión**: Verificar la persistencia de sesión
+1. **Collision detection tests**: Validate the line-intersection logic
+2. **Reconnection tests**: Verify session persistence
 
-## Comandos Disponibles
+## Available Commands
 
-| Comando                  | Descripción                                           |
-| ------------------------ | ----------------------------------------------------- |
-| `npm test`               | Ejecuta todos los tests                               |
-| `npm test -- --coverage` | Ejecuta tests con reporte de cobertura                |
-| `npm test -- --watch`    | Ejecuta tests en modo watch (útil durante desarrollo) |
+| Command                  | Description                                            |
+| ------------------------ | ------------------------------------------------------ |
+| `npm test`               | Runs all server tests (from `server/`)                 |
+| `npm test -- --coverage` | Runs tests with a coverage report                      |
+| `npm test -- --watch`    | Runs tests in watch mode (useful during development)   |
+| `npm run verify:server`  | Runs the server suite from the repo root               |
+| `npm run verify`         | Server tests + Playwright e2e (boots the server)       |
+| `npm run lint`           | Biome lint + format check (the pre-commit gate)        |
 
-## Notas Importantes
+## Important Notes
 
-- Los tests se ejecutan de forma aislada y no interfieren con el servidor de desarrollo
-- No es necesario detener `npm run dev` para ejecutar los tests
-- Los tests actuales son **unit tests** de funciones puras, no requieren servidor corriendo
+- Tests run in isolation and do not interfere with the development server
+- You do not need to stop `npm run dev` to run the tests
+- Unit tests test pure functions and do not require a running server;
+  `npm run verify` boots its own server for the e2e suite
