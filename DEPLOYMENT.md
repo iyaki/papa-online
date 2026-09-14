@@ -25,13 +25,10 @@ cd papa-online
 
 The Docker image is built and published to GHCR automatically on every push
 to `main` (see `.github/workflows/docker-publish.yml`), tagged `latest`,
-`sha-<commit>` and `vX.Y.Z` for version tags. Deploying means pulling it:
+`sha-<commit>` and `vX.Y.Z` for version tags. The package is public, so the
+VPS needs no registry login:
 
 ```bash
-# Only while the package is private: log in with a PAT that has the
-# read:packages scope (or flip the package visibility to public once and
-# skip this step)
-echo <YOUR_TOKEN> | docker login ghcr.io -u YOUR_GITHUB_USER --password-stdin
 
 # Pull the image and start
 docker-compose pull
