@@ -30,8 +30,9 @@ copy-paste templates.
   `npx skills update`.
 - Test-first implementation and the `npm run verify` green gate from
   ADR 0006 are unchanged.
-- The six retrospective feature specs keep their original format; only new
-  specs use the spec-creator structure.
+- All specs — including the six retrospective feature specs — follow the
+  spec-creator structure; untested behaviours live in each spec's
+  Open Questions / Risks.
 
 ## Consequences
 

@@ -25,9 +25,9 @@ and `.claude/skills/` for agent discovery.
 
 ## Feature specs
 
-Backfilled specs documenting existing behaviour (retrospective; written in
-the pre-specralph format, kept as-is; `[ ]` tasks there are real coverage
-gaps, not pending work):
+Backfilled specs documenting existing behaviour (retrospective, all
+spec-creator compliant; untested behaviours are listed in each spec's
+Open Questions / Risks section):
 
 - `sessions-and-reconnection/` — token identity, player sessions, my-games list, reconnect re-attachment
 - `room-lifecycle/` — create/join/rejoin, point counts, surrender, empty-room and inactivity cleanup
