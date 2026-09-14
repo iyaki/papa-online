@@ -34,9 +34,12 @@ not create the link).
 
 ## Consequences
 
-- The VPS no longer needs the repo's Node toolchain, only Docker Compose and
-  (while the package is private) a `read:packages` PAT for
-  `docker login ghcr.io`; flipping the package to public removes the login.
+- The package is public, so the VPS needs only Docker Compose — no
+  `docker login`, no PAT. (Actions-created packages default to private; the
+  visibility is flipped to public once in the package's settings after the
+  first publish. The pre-existing orphan `papa-online` package — pushed
+  manually and unlinked — is deleted before the first CI push, since a
+  `GITHUB_TOKEN` cannot push to an existing package it is not linked to.)
 - Restarts still wipe all in-memory game state; redeploy timing is unchanged
   in that respect.
 - A failed build on `main` leaves the previous `latest` in place — deploy
