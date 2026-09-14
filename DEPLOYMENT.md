@@ -21,13 +21,20 @@ git clone https://github.com/your-user/papa-online.git
 cd papa-online
 ```
 
-### 2. Build and Run
+### 2. Run
+
+The Docker image is built and published to GHCR automatically on every push
+to `main` (see `.github/workflows/docker-publish.yml`), tagged `latest`,
+`sha-<commit>` and `vX.Y.Z` for version tags. Deploying means pulling it:
 
 ```bash
-# Build the image
-docker-compose build
+# Only while the package is private: log in with a PAT that has the
+# read:packages scope (or flip the package visibility to public once and
+# skip this step)
+echo <YOUR_TOKEN> | docker login ghcr.io -u YOUR_GITHUB_USER --password-stdin
 
-# Start the application
+# Pull the image and start
+docker-compose pull
 docker-compose up -d
 
 # View logs
@@ -43,8 +50,7 @@ Visit `http://your-vps-ip:3000` to verify it works.
 ```bash
 cd /opt/papa-online
 git pull origin main
-docker-compose down
-docker-compose build
+docker-compose pull
 docker-compose up -d
 ```
 
