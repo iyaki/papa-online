@@ -1,6 +1,11 @@
 services:
   papa-online:
     image: ghcr.io/iyaki/papa-online:latest
+    build:
+      context: .
+      args:
+        APP_VERSION: ${APP_VERSION:-dev}
+        APP_BUILT_AT: ${APP_BUILT_AT:-}
     container_name: papa-online-app
     restart: unless-stopped
     ports:
