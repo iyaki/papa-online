@@ -1,6 +1,6 @@
 /**
  * Papa Online Server - Integration Tests
- * 
+ *
  * These tests use the actual server and test real Socket.IO communication
  */
 
@@ -40,7 +40,7 @@ describe('Papa Online Server - Integration Tests', () => {
 
     test('should connect client with authentication token', (done) => {
         clientSocket1 = Client(`http://localhost:${httpServerAddr.port}`, {
-            auth: { token: 'test-token-1' }
+            auth: { token: 'test-token-1' },
         });
 
         clientSocket1.on('connect', () => {
@@ -51,13 +51,13 @@ describe('Papa Online Server - Integration Tests', () => {
 
     test('should create a room and receive game_start event', (done) => {
         clientSocket1 = Client(`http://localhost:${httpServerAddr.port}`, {
-            auth: { token: 'test-token-create' }
+            auth: { token: 'test-token-create' },
         });
 
         clientSocket1.on('connect', () => {
             clientSocket1.emit('create_room', {
                 username: 'TestPlayer1',
-                pointCount: 20
+                pointCount: 20,
             });
         });
 
@@ -80,12 +80,12 @@ describe('Papa Online Server - Integration Tests', () => {
 
         clientSocket1 = Client(`http://localhost:${httpServerAddr.port}`, {
             auth: { token: 'test-token-join-1' },
-            autoConnect: false
+            autoConnect: false,
         });
 
         clientSocket2 = Client(`http://localhost:${httpServerAddr.port}`, {
             auth: { token: 'test-token-join-2' },
-            autoConnect: false
+            autoConnect: false,
         });
 
         const checkReady = () => {
@@ -117,7 +117,7 @@ describe('Papa Online Server - Integration Tests', () => {
             if (roomCode) {
                 clientSocket2.emit('join_room', {
                     roomCode,
-                    username: 'Player2'
+                    username: 'Player2',
                 });
             }
         });
@@ -125,7 +125,7 @@ describe('Papa Online Server - Integration Tests', () => {
         clientSocket1.on('connect', () => {
             clientSocket1.emit('create_room', {
                 username: 'Player1',
-                pointCount: 10
+                pointCount: 10,
             });
         });
 
@@ -139,12 +139,12 @@ describe('Papa Online Server - Integration Tests', () => {
 
         clientSocket1 = Client(`http://localhost:${httpServerAddr.port}`, {
             auth: { token: 'test-token-turn-1' },
-            autoConnect: false
+            autoConnect: false,
         });
 
         clientSocket2 = Client(`http://localhost:${httpServerAddr.port}`, {
             auth: { token: 'test-token-turn-2' },
-            autoConnect: false
+            autoConnect: false,
         });
 
         let receivedMoves = 0;
@@ -169,11 +169,14 @@ describe('Papa Online Server - Integration Tests', () => {
         // Player 1 gets game_start when creating
         clientSocket1.on('game_start', () => {
             if (bothReady) {
-        // Both ready, make a move
+                // Both ready, make a move
                 setTimeout(() => {
                     clientSocket1.emit('submit_move', {
                         roomCode,
-                        line: [{ x: 100, y: 100 }, { x: 150, y: 150 }]
+                        line: [
+                            { x: 100, y: 100 },
+                            { x: 150, y: 150 },
+                        ],
                     });
                 }, 100);
             }
@@ -186,7 +189,10 @@ describe('Papa Online Server - Integration Tests', () => {
             setTimeout(() => {
                 clientSocket1.emit('submit_move', {
                     roomCode,
-                    line: [{ x: 100, y: 100 }, { x: 150, y: 150 }]
+                    line: [
+                        { x: 100, y: 100 },
+                        { x: 150, y: 150 },
+                    ],
                 });
             }, 100);
         });
@@ -195,7 +201,7 @@ describe('Papa Online Server - Integration Tests', () => {
             if (roomCode) {
                 clientSocket2.emit('join_room', {
                     roomCode,
-                    username: 'TurnPlayer2'
+                    username: 'TurnPlayer2',
                 });
             }
         });
@@ -203,7 +209,7 @@ describe('Papa Online Server - Integration Tests', () => {
         clientSocket1.on('connect', () => {
             clientSocket1.emit('create_room', {
                 username: 'TurnPlayer1',
-                pointCount: 5
+                pointCount: 5,
             });
         });
 
@@ -215,12 +221,12 @@ describe('Papa Online Server - Integration Tests', () => {
 
         clientSocket1 = Client(`http://localhost:${httpServerAddr.port}`, {
             auth: { token: 'test-token-gameover-1' },
-            autoConnect: false
+            autoConnect: false,
         });
 
         clientSocket2 = Client(`http://localhost:${httpServerAddr.port}`, {
             auth: { token: 'test-token-gameover-2' },
-            autoConnect: false
+            autoConnect: false,
         });
 
         let gameOverCount = 0;
@@ -250,7 +256,7 @@ describe('Papa Online Server - Integration Tests', () => {
             setTimeout(() => {
                 clientSocket1.emit('game_over', {
                     roomCode,
-                    reason: 'Línea cruzada'
+                    reason: 'Línea cruzada',
                 });
             }, 100);
         });
@@ -259,7 +265,7 @@ describe('Papa Online Server - Integration Tests', () => {
             if (roomCode) {
                 clientSocket2.emit('join_room', {
                     roomCode,
-                    username: 'GameOverPlayer2'
+                    username: 'GameOverPlayer2',
                 });
             }
         });
@@ -267,7 +273,7 @@ describe('Papa Online Server - Integration Tests', () => {
         clientSocket1.on('connect', () => {
             clientSocket1.emit('create_room', {
                 username: 'GameOverPlayer1',
-                pointCount: 5
+                pointCount: 5,
             });
         });
 
@@ -279,12 +285,12 @@ describe('Papa Online Server - Integration Tests', () => {
 
         clientSocket1 = Client(`http://localhost:${httpServerAddr.port}`, {
             auth: { token: 'test-token-surrender-1' },
-            autoConnect: false
+            autoConnect: false,
         });
 
         clientSocket2 = Client(`http://localhost:${httpServerAddr.port}`, {
             auth: { token: 'test-token-surrender-2' },
-            autoConnect: false
+            autoConnect: false,
         });
 
         clientSocket1.on('room_created', (data) => {
@@ -307,7 +313,7 @@ describe('Papa Online Server - Integration Tests', () => {
             if (roomCode) {
                 clientSocket2.emit('join_room', {
                     roomCode,
-                    username: 'SurrenderPlayer2'
+                    username: 'SurrenderPlayer2',
                 });
             }
         });
@@ -315,7 +321,7 @@ describe('Papa Online Server - Integration Tests', () => {
         clientSocket1.on('connect', () => {
             clientSocket1.emit('create_room', {
                 username: 'SurrenderPlayer1',
-                pointCount: 5
+                pointCount: 5,
             });
         });
 
@@ -325,7 +331,7 @@ describe('Papa Online Server - Integration Tests', () => {
     test('should return my games list', (done) => {
         clientSocket1 = Client(`http://localhost:${httpServerAddr.port}`, {
             auth: { token: 'test-token-mygames' },
-            autoConnect: false
+            autoConnect: false,
         });
 
         // Server pushes my_games_list on create_room AND on get_my_games;
@@ -347,7 +353,7 @@ describe('Papa Online Server - Integration Tests', () => {
         clientSocket1.on('connect', () => {
             clientSocket1.emit('create_room', {
                 username: 'MyGamesPlayer',
-                pointCount: 5
+                pointCount: 5,
             });
         });
 

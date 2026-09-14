@@ -2,20 +2,26 @@
 
 async function makeMove(page, fromValue, toValue) {
     // Wait for numbers to be defined and populated
-    await page.waitForFunction(() => {
-        return window.game && window.game.numbers && window.game.numbers.length > 0;
-    }, { timeout: 10000 });
+    await page.waitForFunction(
+        () => {
+            return window.game && window.game.numbers && window.game.numbers.length > 0;
+        },
+        { timeout: 10000 },
+    );
 
     // Get coordinates from the exposed game instance
-    const coords = await page.evaluate(({ from, to }) => {
-        if (!window.game || !window.game.numbers) return null;
-        const n1 = window.game.numbers.find(n => n.value === from);
-        const n2 = window.game.numbers.find(n => n.value === to);
-        return { n1, n2 };
-    }, { from: fromValue, to: toValue });
+    const coords = await page.evaluate(
+        ({ from, to }) => {
+            if (!window.game || !window.game.numbers) return null;
+            const n1 = window.game.numbers.find((n) => n.value === from);
+            const n2 = window.game.numbers.find((n) => n.value === to);
+            return { n1, n2 };
+        },
+        { from: fromValue, to: toValue },
+    );
 
     if (!coords || !coords.n1 || !coords.n2) {
-        const available = await page.evaluate(() => window.game.numbers.map(n => n.value));
+        const available = await page.evaluate(() => window.game.numbers.map((n) => n.value));
         console.log(`Available numbers: ${available.join(', ')}`);
         throw new Error(`Could not find numbers ${fromValue} or ${toValue}`);
     }
@@ -52,7 +58,7 @@ async function setupGame(browser) {
     await page1.fill('#username-input', 'P1');
     await page1.click('#create-room-btn');
     await page1.waitForSelector('#game-screen', { state: 'visible' });
-    
+
     const roomCode = (await page1.locator('#room-code-display').textContent()).trim();
 
     // P2 Joins
@@ -60,7 +66,7 @@ async function setupGame(browser) {
     await page2.fill('#username-input', 'P2');
     await page2.fill('#room-code-input', roomCode);
     await page2.click('#join-room-btn');
-    
+
     // Sync wait
     await page2.waitForSelector('#game-screen', { state: 'visible' });
     await page1.waitForSelector('#game-canvas', { state: 'visible' });

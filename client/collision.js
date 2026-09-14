@@ -3,12 +3,16 @@ export function doLinesIntersect(p1, p2, p3, p4) {
     function getOrientation(p, q, r) {
         const val = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);
         if (Math.abs(val) < 0.001) return 0; // Collinear
-        return (val > 0) ? 1 : 2;
+        return val > 0 ? 1 : 2;
     }
 
     function onSegment(p, q, r) {
-        return q.x <= Math.max(p.x, r.x) && q.x >= Math.min(p.x, r.x) &&
-            q.y <= Math.max(p.y, r.y) && q.y >= Math.min(p.y, r.y);
+        return (
+            q.x <= Math.max(p.x, r.x) &&
+            q.x >= Math.min(p.x, r.x) &&
+            q.y <= Math.max(p.y, r.y) &&
+            q.y >= Math.min(p.y, r.y)
+        );
     }
 
     const o1 = getOrientation(p1, p2, p3);
@@ -19,8 +23,12 @@ export function doLinesIntersect(p1, p2, p3, p4) {
     if (o1 !== o2 && o3 !== o4) return true;
 
     // Ignore shared endpoints
-    if (arePointsEqual(p1, p3) || arePointsEqual(p1, p4) ||
-        arePointsEqual(p2, p3) || arePointsEqual(p2, p4)) {
+    if (
+        arePointsEqual(p1, p3) ||
+        arePointsEqual(p1, p4) ||
+        arePointsEqual(p2, p3) ||
+        arePointsEqual(p2, p4)
+    ) {
         return false;
     }
 
@@ -69,10 +77,16 @@ export function doPolylineIntersection(path1, path2, safeZone = null) {
     for (let i = 0; i < path1.length - 1; i++) {
         for (let j = 0; j < path2.length - 1; j++) {
             if (doLinesIntersect(path1[i], path1[i + 1], path2[j], path2[j + 1])) {
-
                 if (safeZone) {
-                    const intersection = getIntersectionPoint(path1[i], path1[i + 1], path2[j], path2[j + 1]);
-                    const dist = Math.sqrt(Math.pow(intersection.x - safeZone.x, 2) + Math.pow(intersection.y - safeZone.y, 2));
+                    const intersection = getIntersectionPoint(
+                        path1[i],
+                        path1[i + 1],
+                        path2[j],
+                        path2[j + 1],
+                    );
+                    const dist = Math.sqrt(
+                        (intersection.x - safeZone.x) ** 2 + (intersection.y - safeZone.y) ** 2,
+                    );
 
                     if (dist <= safeZone.radius) {
                         // Intersection is inside safe zone, ignore it!
@@ -86,4 +100,3 @@ export function doPolylineIntersection(path1, path2, safeZone = null) {
     }
     return false;
 }
-

@@ -45,14 +45,14 @@
                         <option value="25">25 pts</option>
                         <option value="30">30 pts</option>
                     </select>
-                    <button id="create-room-btn" class="primary-btn">Crear Sala</button>
+<button type="button" id="create-room-btn" class="primary-btn">Crear Sala</button>
                 </div>
                 <div class="join-room-group">
                     <input type="text" id="room-code-input" placeholder="Código" maxlength="6" class="sketchy-input">
-                    <button id="join-room-btn" class="primary-btn">Unirse</button>
+<button type="button" id="join-room-btn" class="primary-btn">Unirse</button>
                 </div>
-                <button id="stats-btn" class="secondary-btn" style="margin-top: 10px;">📊 Estadísticas</button>
-                <button id="faq-btn" class="secondary-btn" style="margin-top: 10px;">❓ Ayuda / Reglas</button>
+<button type="button" id="stats-btn" class="secondary-btn" style="margin-top: 10px;">📊 Estadísticas</button>
+<button type="button" id="faq-btn" class="secondary-btn" style="margin-top: 10px;">❓ Ayuda / Reglas</button>
 
                 <div id="my-games-container"
                     style="width: 100%; border-top: 2px dashed var(--text-color); padding-top: 1rem;">
@@ -62,7 +62,7 @@
             </div>
         <p style="font-size: 0.8rem; color: #777; margin-top: 5px;">* Las salas inactivas se eliminan después de 3 días.</p>
         
-        <button id="enable-notifications-btn" class="secondary-btn hidden"
+<button type="button" id="enable-notifications-btn" class="secondary-btn hidden"
             style="margin-top: 15px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
             🔔 Activar Notificaciones
         </button>
@@ -81,8 +81,8 @@
         <div id="game-screen" class="screen hidden">
             <div id="game-info">
                 <div class="game-header">
-                    <button id="back-to-menu-btn" class="icon-btn" title="Volver al Menú">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+<button type="button" id="back-to-menu-btn" class="icon-btn" title="Volver al Menú">
+<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
                             <polyline points="9 22 9 12 15 12 15 22"></polyline>
@@ -94,8 +94,8 @@
                             Sala: <span id="room-code-display"></span>
                         </div>
 
-                        <button id="share-btn" class="icon-btn" aria-label="Compartir">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+<button type="button" id="share-btn" class="icon-btn" aria-label="Compartir">
+<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                 stroke-linejoin="round">
                                 <circle cx="18" cy="5" r="3"></circle>
@@ -130,17 +130,17 @@
         <div id="game-over-screen" class="screen hidden">
             <div class="modal-content">
                 <h2 id="game-over-message">Juego Terminado</h2>
-                <button id="rematch-btn" class="primary-btn" style="margin-top: 10px; background-color: var(--accent-color);">🔄 Pedir
+<button type="button" id="rematch-btn" class="primary-btn" style="margin-top: 10px; background-color: var(--accent-color);">🔄 Pedir
                     Revancha</button>
-                <button id="restart-btn" class="secondary-btn" style="margin-top: 10px;">Volver al Lobby</button>
-                <button id="export-btn" class="secondary-btn" style="margin-top: 10px;">📸 Guardar Recuerdo</button>
+<button type="button" id="restart-btn" class="secondary-btn" style="margin-top: 10px;">Volver al Lobby</button>
+<button type="button" id="export-btn" class="secondary-btn" style="margin-top: 10px;">📸 Guardar Recuerdo</button>
                 
                 <div id="rematch-request-container" class="hidden"
                     style="margin-top: 20px; padding: 15px; background: rgba(0,0,0,0.05); border-radius: 10px;">
                     <p style="margin-bottom: 10px; font-weight: bold;">¡Tu oponente quiere la revancha!</p>
                     <div style="display: flex; gap: 10px;">
-                        <button id="accept-rematch-btn" class="primary-btn" style="font-size: 1rem; padding: 10px;">Aceptar</button>
-                        <button id="reject-rematch-btn" class="secondary-btn" style="font-size: 1rem; padding: 10px;">Rechazar</button>
+<button type="button" id="accept-rematch-btn" class="primary-btn" style="font-size: 1rem; padding: 10px;">Aceptar</button>
+<button type="button" id="reject-rematch-btn" class="secondary-btn" style="font-size: 1rem; padding: 10px;">Rechazar</button>
                     </div>
                 </div>
                 <p id="rematch-status" style="margin-top: 15px; font-style: italic; color: #666;" class="hidden"></p>
@@ -168,7 +168,7 @@
                 <div id="stats-list" style="max-height: 50vh; overflow-y: auto; text-align: left; margin-bottom: 20px;">
                     <!-- Items will be injected here -->
                 </div>
-                <button id="close-stats-btn" class="primary-btn"
+<button type="button" id="close-stats-btn" class="primary-btn"
                     style="margin-top: 10px; margin-bottom: 20px; width: 95%;">Volver al Lobby</button>
             </div>
         </div>
@@ -199,7 +199,7 @@
 <p>Las partidas guardadas en "Mis Partidas" se mantienen activas durante <strong>3 días</strong> después de la última
     actividad.</p>
                 </div>
-                <button id="close-faq-btn" class="primary-btn"
+<button type="button" id="close-faq-btn" class="primary-btn"
                     style="margin-top: 20px; margin-bottom: 20px; width: 95%;">Entendido</button>
             </div>
         </div>
