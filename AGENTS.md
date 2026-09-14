@@ -46,3 +46,9 @@ done.
 - Docs `README.md`/`TESTING.md` are Spanish; AI-workflow docs (this file,
   `specs/`) are English.
 - Deployment via Docker — see `DEPLOYMENT.md`.
+
+## Decision records
+
+Architecture decisions (frameworks, structure, process) are recorded as
+numbered ADRs in `docs/adr/` — add one in the same PR when making a
+significant architectural choice.
