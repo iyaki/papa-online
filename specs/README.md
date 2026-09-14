@@ -19,6 +19,18 @@ fix or dependency bump starts here, as a spec, before any implementation code.
 7. A change is done when `npm run verify` is green and every acceptance
    criterion lists a passing test.
 
+## Feature specs
+
+Backfilled specs documenting existing behaviour (retrospective; `[ ]` tasks
+there are real coverage gaps, not pending work):
+
+- `sessions-and-reconnection/` — token identity, player sessions, my-games list, reconnect re-attachment
+- `room-lifecycle/` — create/join/rejoin, point counts, surrender, empty-room and inactivity cleanup
+- `turn-based-gameplay/` — submit_move gating, move_made, game_sync, client drawing
+- `overlap-detection/` — number placement, line-crossing geometry, collision
+- `game-end/` — game_over, winner/loser, local stats, disconnect semantics
+- `rematch/` — request/accept/reject, game restart, lobby status
+
 ## Lifecycle
 
 Specs live in git alongside the change and are kept after merge as the
