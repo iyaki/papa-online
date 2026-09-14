@@ -7,7 +7,7 @@
     --primary-color: #2c3e50;
     --accent-color: #d35400;
     /* Burnt orange for highlights */
-    --font-main: 'Patrick Hand', cursive;
+    --font-main: "Patrick Hand", cursive;
 }
 
 * {
@@ -28,14 +28,16 @@ body {
     display: flex;
     justify-content: center;
     height: 100vh;
+    /* biome-ignore lint/suspicious/noDuplicateProperties: dvh with vh fallback for older browsers */
     height: 100dvh;
     overflow: hidden;
 }
 
 .screen {
     width: 100%;
-    height: 100%;
+    /* biome-ignore lint/suspicious/noDuplicateProperties: progressive viewport-height fallbacks */
     height: 95vh;
+    /* biome-ignore lint/suspicious/noDuplicateProperties: dvh with vh fallback for older browsers */
     height: 98dvh;
     display: flex;
     flex-direction: column;
@@ -122,7 +124,9 @@ button {
     color: var(--text-color);
     border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
     /* Sketchy border */
-    transition: transform 0.1s, background 0.2s;
+    transition:
+        transform 0.1s,
+        background 0.2s;
     width: 100%;
     /* Full width */
 }
@@ -170,7 +174,9 @@ button:active {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: transform 0.2s, color 0.2s;
+    transition:
+        transform 0.2s,
+        color 0.2s;
     width: auto;
     /* Override full width */
     border-radius: 50%;
@@ -309,15 +315,11 @@ button:active {
 }
 
 @keyframes pulse {
-
     0%,
     100% {
         box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7);
     }
 
-    50% {
-        box-shadow: 0 0 0 10px rgba(76, 175, 80, 0);
-    }
     50% {
         box-shadow: 0 0 0 10px rgba(76, 175, 80, 0);
     }
@@ -407,11 +409,10 @@ button:active {
     font-family: monospace;
 }
 
-
 .canvas-container {
     width: 100%;
     max-width: 100%;
-    aspect-ratio: 600/800;
+    aspect-ratio: 600 / 800;
     /* Portrait aspect ratio */
     max-height: 75vh;
     /* Don't take full height */
@@ -466,11 +467,11 @@ button:active {
     border-radius: 10px;
 }
 
-#stats-summary>div {
+#stats-summary > div {
     text-align: center;
 }
 
-#stats-summary>div>div:first-child {
+#stats-summary > div > div:first-child {
     font-size: 3em;
     font-weight: bold;
     margin-bottom: 5px;

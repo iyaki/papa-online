@@ -2,7 +2,6 @@ const { test, expect } = require('@playwright/test');
 const { makeMove, setupGame } = require('./utils');
 
 test.describe('Game Win/Loss Scenarios', () => {
-
     test('Player 2 Wins (Player 1 crashes)', async ({ browser }) => {
         const { page1, page2, context1, context2 } = await setupGame(browser);
 

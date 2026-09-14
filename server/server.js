@@ -7,9 +7,9 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: "*",
-        methods: ["GET", "POST"]
-    }
+        origin: '*',
+        methods: ['GET', 'POST'],
+    },
 });
 
 // Serve static files from client
@@ -31,7 +31,7 @@ function generateNumbers(count, width, height) {
             pos = {
                 value: i,
                 x: padding + Math.random() * w,
-                y: padding + Math.random() * h
+                y: padding + Math.random() * h,
             };
             attempts++;
         } while (checkOverlap(pos, numbers) && attempts < 100);
@@ -42,7 +42,7 @@ function generateNumbers(count, width, height) {
 
 function checkOverlap(pos, numbers) {
     const minDist = 40;
-    return numbers.some(n => {
+    return numbers.some((n) => {
         const dx = n.x - pos.x;
         const dy = n.y - pos.y;
         return Math.sqrt(dx * dx + dy * dy) < minDist;
@@ -62,7 +62,7 @@ function scheduleCleanup(roomCode) {
     if (timeSinceLastActivity >= cleanupDelay) {
         // Notify players before deletion
         if (rooms[roomCode].players) {
-            rooms[roomCode].players.forEach(p => {
+            rooms[roomCode].players.forEach((p) => {
                 io.to(p.id).emit('room_deleted', { roomCode });
                 io.to(p.id).emit('my_games_update');
             });
@@ -85,25 +85,32 @@ io.on('connection', (socket) => {
     // Helper to send list of games
     const sendMyGames = () => {
         if (token && playerSessions[token]) {
-            const myGames = playerSessions[token].rooms.map(code => {
-                const r = rooms[code];
-                if (!r) return null;
-                const opponent = r.players.find(p => p.token !== token);
+            const myGames = playerSessions[token].rooms
+                .map((code) => {
+                    const r = rooms[code];
+                    if (!r) return null;
+                    const opponent = r.players.find((p) => p.token !== token);
 
-                // Debug log
-                // console.log(`Sending game ${code}: rematchRequestedBy=${r.rematchRequestedBy}`);
+                    // Debug log
+                    // console.log(`Sending game ${code}: rematchRequestedBy=${r.rematchRequestedBy}`);
 
-                return {
-                    roomCode: code,
-                    opponentName: opponent ? opponent.username : 'Esperando...',
-                    isMyTurn: r.currentTurn === socket.id,
-                    isGameOver: !!r.winner,
-                    winner: r.winner,
-                    loser: r.loser,
-                    rematchRequestedBy: r.rematchRequestedBy
-                };
-            }).filter(g => g !== null);
-            console.log(`Sending ${myGames.length} games to ${token}. Data:`, JSON.stringify(myGames.map(g => ({ code: g.roomCode, rematch: g.rematchRequestedBy }))));
+                    return {
+                        roomCode: code,
+                        opponentName: opponent ? opponent.username : 'Esperando...',
+                        isMyTurn: r.currentTurn === socket.id,
+                        isGameOver: !!r.winner,
+                        winner: r.winner,
+                        loser: r.loser,
+                        rematchRequestedBy: r.rematchRequestedBy,
+                    };
+                })
+                .filter((g) => g !== null);
+            console.log(
+                `Sending ${myGames.length} games to ${token}. Data:`,
+                JSON.stringify(
+                    myGames.map((g) => ({ code: g.roomCode, rematch: g.rematchRequestedBy })),
+                ),
+            );
             socket.emit('my_games_list', myGames);
         }
     };
@@ -113,11 +120,11 @@ io.on('connection', (socket) => {
         const { username, rooms: userRooms } = playerSessions[token];
         console.log(`Player ${username} reconnected. Rooms: ${userRooms.join(', ')}`);
 
-        userRooms.forEach(roomCode => {
+        userRooms.forEach((roomCode) => {
             const room = rooms[roomCode];
             if (room) {
                 // Update player's socket ID in the room
-                const player = room.players.find(p => p.token === token);
+                const player = room.players.find((p) => p.token === token);
                 if (player) {
                     const oldSocketId = player.id;
                     // If it was this player's turn, update the turn ID to the new socket ID
@@ -144,16 +151,18 @@ io.on('connection', (socket) => {
         const numbers = generateNumbers(pointCount, 600, 800);
 
         rooms[roomCode] = {
-            players: [{
-                id: socket.id,
-                username,
-                token: token // Store token
-            }],
+            players: [
+                {
+                    id: socket.id,
+                    username,
+                    token: token, // Store token
+                },
+            ],
             numbers: numbers,
             lines: [],
             currentNumber: 1,
             currentTurn: socket.id, // Creator starts first
-            lastActivity: Date.now()
+            lastActivity: Date.now(),
         };
 
         // Save Session (Multi-room)
@@ -172,7 +181,7 @@ io.on('connection', (socket) => {
         // Emit game_start immediately so creator can draw
         socket.emit('game_start', {
             numbers: numbers,
-            currentTurn: socket.id
+            currentTurn: socket.id,
         });
 
         console.log(`Room ${roomCode} created by ${username} with ${pointCount} points`);
@@ -182,12 +191,11 @@ io.on('connection', (socket) => {
         scheduleCleanup(roomCode);
     });
 
-
     socket.on('join_room', ({ roomCode, username }) => {
         const room = rooms[roomCode];
         if (room) {
             // Check if already in room
-            const existingPlayer = room.players.find(p => p.token === token);
+            const existingPlayer = room.players.find((p) => p.token === token);
             if (existingPlayer) {
                 // Just rejoin/update
                 existingPlayer.id = socket.id;
@@ -196,12 +204,13 @@ io.on('connection', (socket) => {
 
                 // Ensure session tracks it
                 if (!playerSessions[token]) playerSessions[token] = { username, rooms: [] };
-                if (!playerSessions[token].rooms.includes(roomCode)) playerSessions[token].rooms.push(roomCode);
+                if (!playerSessions[token].rooms.includes(roomCode))
+                    playerSessions[token].rooms.push(roomCode);
 
                 sendMyGames();
 
                 // If game is running, send sync? Client will ask for it via enterGame -> maybe we need a specific 'get_game_state' event?
-                // For now, existing logic relies on 'game_sync' being sent on connection. 
+                // For now, existing logic relies on 'game_sync' being sent on connection.
                 // We should probably add a 'request_game_sync' event from client.
                 return;
             }
@@ -210,7 +219,7 @@ io.on('connection', (socket) => {
                 room.players.push({
                     id: socket.id,
                     username,
-                    token: token
+                    token: token,
                 });
 
                 // Save Session
@@ -246,16 +255,16 @@ io.on('connection', (socket) => {
                         winner: null,
                         loser: null,
                         players: room.players,
-                        rematchRequestedBy: room.rematchRequestedBy
+                        rematchRequestedBy: room.rematchRequestedBy,
                     });
 
                     // Also notify the creator of the updated turn
-                    const creator = room.players.find(p => p.id !== socket.id);
+                    const creator = room.players.find((p) => p.id !== socket.id);
                     if (creator) {
                         io.to(creator.id).emit('move_made', {
                             line: null,
                             nextNumber: room.currentNumber,
-                            currentTurn: room.currentTurn
+                            currentTurn: room.currentTurn,
                         });
                     }
                 }
@@ -280,8 +289,8 @@ io.on('connection', (socket) => {
                 isGameOver: !!room.winner,
                 winner: room.winner,
                 loser: room.loser,
-                players: room.players.map(p => ({ username: p.username, token: p.token })),
-                rematchRequestedBy: room.rematchRequestedBy
+                players: room.players.map((p) => ({ username: p.username, token: p.token })),
+                rematchRequestedBy: room.rematchRequestedBy,
             });
         }
     });
@@ -294,7 +303,7 @@ io.on('connection', (socket) => {
 
             // Switch turn only if there are 2 players
             if (room.players.length === 2) {
-                const nextPlayer = room.players.find(p => p.id !== socket.id);
+                const nextPlayer = room.players.find((p) => p.id !== socket.id);
                 room.currentTurn = nextPlayer ? nextPlayer.id : socket.id;
             } else {
                 // Set turn to null (waiting for opponent) after creator's first move
@@ -304,14 +313,14 @@ io.on('connection', (socket) => {
             io.to(roomCode).emit('move_made', {
                 line,
                 nextNumber: room.currentNumber,
-                currentTurn: room.currentTurn
+                currentTurn: room.currentTurn,
             });
 
             room.lastActivity = Date.now();
 
             // Notify both players to update their game lists (turn changed)
-            room.players.forEach(p => {
-                // We need to find their socket... 
+            room.players.forEach((p) => {
+                // We need to find their socket...
                 // Ideally we would emit to specific socket IDs, but io.to(socketId) works.
                 io.to(p.id).emit('my_games_update'); // Trigger client to fetch list
             });
@@ -327,11 +336,11 @@ io.on('connection', (socket) => {
             }
 
             // Find loser (current socket)
-            const loserPlayer = room.players.find(p => p.id === socket.id);
+            const loserPlayer = room.players.find((p) => p.id === socket.id);
             room.loser = loserPlayer ? loserPlayer.token : 'unknown';
 
             // Find winner (the other player)
-            const winnerPlayer = room.players.find(p => p.id !== socket.id);
+            const winnerPlayer = room.players.find((p) => p.id !== socket.id);
             room.winner = winnerPlayer ? winnerPlayer.token : 'unknown';
 
             room.lastActivity = Date.now();
@@ -340,28 +349,31 @@ io.on('connection', (socket) => {
                 roomCode,
                 loserSocket: socket.id,
                 loserToken: room.loser,
-                winnerToken: room.winner
+                winnerToken: room.winner,
             });
 
             io.to(roomCode).emit('game_over', { reason, loser: room.loser, winner: room.winner });
 
             // Notify for list update
-            room.players.forEach(p => io.to(p.id).emit('my_games_update'));
+            room.players.forEach((p) => {
+                io.to(p.id).emit('my_games_update');
+            });
 
             // Cleanup is handled by the centralized scheduleCleanup function started at creation
         }
     });
 
-
     socket.on('leave_room', ({ roomCode }) => {
         // This is now "Surrender/Quit"
         const room = rooms[roomCode];
         if (room) {
-            room.players = room.players.filter(p => p.id !== socket.id);
+            room.players = room.players.filter((p) => p.id !== socket.id);
 
             // Remove from session
             if (token && playerSessions[token]) {
-                playerSessions[token].rooms = playerSessions[token].rooms.filter(r => r !== roomCode);
+                playerSessions[token].rooms = playerSessions[token].rooms.filter(
+                    (r) => r !== roomCode,
+                );
             }
 
             socket.leave(roomCode);
@@ -387,20 +399,22 @@ io.on('connection', (socket) => {
             console.log(`Rematch requested in room ${roomCode} by ${token}`);
 
             // Find opponent
-            const opponent = room.players.find(p => p.id !== socket.id);
+            const opponent = room.players.find((p) => p.id !== socket.id);
             if (opponent) {
                 io.to(opponent.id).emit('rematch_requested');
             }
 
             // Update lists for both (to show status in lobby)
-            room.players.forEach(p => io.to(p.id).emit('my_games_update'));
+            room.players.forEach((p) => {
+                io.to(p.id).emit('my_games_update');
+            });
         }
     });
 
     socket.on('respond_rematch', ({ roomCode, accept }) => {
         const room = rooms[roomCode];
         if (room) {
-            const opponent = room.players.find(p => p.id !== socket.id);
+            const opponent = room.players.find((p) => p.id !== socket.id);
             room.lastActivity = Date.now();
 
             if (accept) {
@@ -423,14 +437,15 @@ io.on('connection', (socket) => {
                 // Emit Game Restart to BOTH
                 io.to(roomCode).emit('game_restarted', {
                     numbers: room.numbers,
-                    currentTurn: room.currentTurn
+                    currentTurn: room.currentTurn,
                 });
 
                 // Update lists for both (to clear status in lobby)
-                room.players.forEach(p => io.to(p.id).emit('my_games_update'));
+                room.players.forEach((p) => {
+                    io.to(p.id).emit('my_games_update');
+                });
 
                 console.log(`Rematch started in room ${roomCode}`);
-
             } else {
                 room.rematchRequestedBy = null; // Clear request
 
@@ -440,7 +455,9 @@ io.on('connection', (socket) => {
                 }
 
                 // Update lists for both (to clear status in lobby)
-                room.players.forEach(p => io.to(p.id).emit('my_games_update'));
+                room.players.forEach((p) => {
+                    io.to(p.id).emit('my_games_update');
+                });
             }
         }
     });
@@ -449,7 +466,6 @@ io.on('connection', (socket) => {
         console.log(`User disconnected: ${socket.id}`);
     });
 });
-
 
 if (require.main === module) {
     const PORT = process.env.PORT || 3000;
@@ -463,5 +479,5 @@ module.exports = {
     io,
     rooms,
     generateNumbers,
-    checkOverlap
+    checkOverlap,
 };

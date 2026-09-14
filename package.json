@@ -8,9 +8,12 @@
         "test": "cd server && npm test",
         "test:e2e": "playwright test",
         "verify:server": "cd server && npm test",
-        "verify": "npm run verify:server && playwright test"
+        "verify": "npm run verify:server && playwright test",
+        "lint": "biome check .",
+        "lint:fix": "biome check --write ."
     },
     "devDependencies": {
+        "@biomejs/biome": "^2.5.13",
         "@playwright/test": "^1.63.0",
         "typescript": "^7.0.2",
         "typescript-language-server": "^6.0.0"

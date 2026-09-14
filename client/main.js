@@ -37,7 +37,7 @@ shareBtn.addEventListener('click', async () => {
     const shareData = {
         title: 'Juego de la Papa Online',
         text: `¡Únete a mi partida! Código: ${roomCode}`,
-        url: `${window.location.origin}/?room=${roomCode}`
+        url: `${window.location.origin}/?room=${roomCode}`,
     };
 
     if (navigator.share) {
@@ -48,25 +48,27 @@ shareBtn.addEventListener('click', async () => {
         }
     } else {
         // Fallback to clipboard
-        navigator.clipboard.writeText(shareData.url).then(() => {
-            const originalText = shareBtn.innerText;
-            shareBtn.innerText = "¡Copiado!";
-            setTimeout(() => shareBtn.innerText = originalText, 2000);
-        }).catch(err => {
-            console.error('Error copying link:', err);
-        });
+        navigator.clipboard
+            .writeText(shareData.url)
+            .then(() => {
+                const originalText = shareBtn.innerText;
+                shareBtn.innerText = '¡Copiado!';
+                setTimeout(() => (shareBtn.innerText = originalText), 2000);
+            })
+            .catch((err) => {
+                console.error('Error copying link:', err);
+            });
     }
 });
-
-
 
 // Helper for UUID generation (fallback for non-secure contexts)
 function generateUUID() {
     if (typeof crypto !== 'undefined' && crypto.randomUUID) {
         return crypto.randomUUID();
     }
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+        var r = (Math.random() * 16) | 0,
+            v = c === 'x' ? r : (r & 0x3) | 0x8;
         return v.toString(16);
     });
 }
@@ -81,8 +83,8 @@ if (!sessionToken) {
 // Socket.io
 const socket = io({
     auth: {
-        token: sessionToken
-    }
+        token: sessionToken,
+    },
 });
 
 // Check for Room in URL (Auto-join / Pre-fill)
@@ -150,10 +152,10 @@ function sendNotification(title, body) {
     if ('Notification' in window && Notification.permission === 'granted' && !isPageVisible()) {
         const notification = new Notification(title, {
             body: body,
-            icon: '/favicon.ico', 
+            icon: '/favicon.ico',
             badge: '/favicon.ico',
             tag: 'turn-notification',
-            requireInteraction: false
+            requireInteraction: false,
         });
 
         // Auto-close after 5 seconds
@@ -177,7 +179,7 @@ function createConfetti() {
         return Math.random() * (max - min) + min;
     }
 
-    const interval = setInterval(function () {
+    const interval = setInterval(() => {
         const timeLeft = animationEnd - Date.now();
 
         if (timeLeft <= 0) {
@@ -206,7 +208,7 @@ function createConfetti() {
             setTimeout(() => {
                 confetti.style.top = window.innerHeight + 'px';
                 confetti.style.opacity = '0';
-                confetti.style.transform = 'rotate(' + (Math.random() * 720) + 'deg)';
+                confetti.style.transform = 'rotate(' + Math.random() * 720 + 'deg)';
             }, 50);
 
             setTimeout(() => {
@@ -260,96 +262,113 @@ socket.on('move_made', ({ line, nextNumber, currentTurn }) => {
     // Check if it's now my turn and send notification
     if (game && currentTurn === game.myPlayerId) {
         const opponentName = game.opponentName || 'Tu oponente';
-        sendNotification('Papa Online - ¡Es tu turno!', `${opponentName} hizo su jugada. Ahora te toca a ti.`);
+        sendNotification(
+            'Papa Online - ¡Es tu turno!',
+            `${opponentName} hizo su jugada. Ahora te toca a ti.`,
+        );
     }
 });
 
 // Reconnection / Sync Event
-socket.on('game_sync', ({ roomCode, numbers, lines, currentNumber, currentTurn, isGameOver, winner, loser, players, rematchRequestedBy }) => {
-    console.log("Reconnected to game:", roomCode);
+socket.on(
+    'game_sync',
+    ({
+        roomCode,
+        numbers,
+        lines,
+        currentNumber,
+        currentTurn,
+        isGameOver,
+        winner,
+        loser,
+        players,
+        rematchRequestedBy,
+    }) => {
+        console.log('Reconnected to game:', roomCode);
 
-    // Restore UI
-    lobbyScreen.classList.add('hidden');
-    gameScreen.classList.remove('hidden');
-    roomCodeDisplay.innerText = roomCode;
+        // Restore UI
+        lobbyScreen.classList.add('hidden');
+        gameScreen.classList.remove('hidden');
+        roomCodeDisplay.innerText = roomCode;
 
-    const canvas = document.getElementById('game-canvas');
-    const username = usernameInput.value.trim();
+        const canvas = document.getElementById('game-canvas');
+        const username = usernameInput.value.trim();
 
-    // Initialize Game if not already
-    if (!game) {
-        game = new Game(canvas, username, roomCode, socket, sessionToken);
-    } else {
-        game.roomCode = roomCode; // Update game room code
-        game.username = username; // Update username if new game
-    }
-
-    // Restore Game State
-    game.syncState(numbers, lines, currentNumber, currentTurn, isGameOver);
-
-    // Store metadata for export
-    game.winner = winner;
-    game.loser = loser;
-
-    if (players && players.length > 0) {
-        const opponent = players.find(p => p.token !== sessionToken);
-        game.opponentName = opponent ? opponent.username : 'Oponente';
-    } else {
-        game.opponentName = 'Oponente';
-    }
-
-    // Handle Rematch State
-    if (isGameOver) {
-        // Show Game Over Screen
-        document.getElementById('game-over-screen').classList.remove('hidden');
-
-        // Update message
-        const message = document.getElementById('game-over-message');
-        if (winner === sessionToken) {
-            message.innerText = "¡GANASTE! 🏆";
-            message.style.color = "#4caf50";
-            createConfetti();
+        // Initialize Game if not already
+        if (!game) {
+            game = new Game(canvas, username, roomCode, socket, sessionToken);
         } else {
-            message.innerText = "Juego Terminado 🥔";
-            message.style.color = "var(--accent-color)";
+            game.roomCode = roomCode; // Update game room code
+            game.username = username; // Update username if new game
         }
 
-        // Check Rematch Status
-        const requestContainer = document.getElementById('rematch-request-container');
-        const rematchBtn = document.getElementById('rematch-btn');
-        const statusText = document.getElementById('rematch-status');
+        // Restore Game State
+        game.syncState(numbers, lines, currentNumber, currentTurn, isGameOver);
 
-        // Reset UI first
-        requestContainer.classList.add('hidden');
-        rematchBtn.classList.remove('hidden');
-        rematchBtn.disabled = false;
-        rematchBtn.innerText = "🔄 Pedir Revancha";
-        statusText.classList.add('hidden');
+        // Store metadata for export
+        game.winner = winner;
+        game.loser = loser;
 
-        if (rematchRequestedBy) {
-            if (rematchRequestedBy === sessionToken) {
-                // I requested it
-                rematchBtn.disabled = true;
-                rematchBtn.innerText = "Esperando respuesta...";
-                statusText.innerText = "Esperando a que el oponente acepte...";
-                statusText.classList.remove('hidden');
-                statusText.style.color = "#666";
+        if (players && players.length > 0) {
+            const opponent = players.find((p) => p.token !== sessionToken);
+            game.opponentName = opponent ? opponent.username : 'Oponente';
+        } else {
+            game.opponentName = 'Oponente';
+        }
+
+        // Handle Rematch State
+        if (isGameOver) {
+            // Show Game Over Screen
+            document.getElementById('game-over-screen').classList.remove('hidden');
+
+            // Update message
+            const message = document.getElementById('game-over-message');
+            if (winner === sessionToken) {
+                message.innerText = '¡GANASTE! 🏆';
+                message.style.color = '#4caf50';
+                createConfetti();
             } else {
-                // Opponent requested it
-                requestContainer.classList.remove('hidden');
-                rematchBtn.classList.add('hidden');
+                message.innerText = 'Juego Terminado 🥔';
+                message.style.color = 'var(--accent-color)';
             }
-        }
-    } else {
-        document.getElementById('game-over-screen').classList.add('hidden');
-    }
 
-    // Update Local Stats
-    if (isGameOver && winner) {
-        const isWin = winner === sessionToken;
-        updateStats(game.opponentName, isWin, roomCode);
-    }
-});
+            // Check Rematch Status
+            const requestContainer = document.getElementById('rematch-request-container');
+            const rematchBtn = document.getElementById('rematch-btn');
+            const statusText = document.getElementById('rematch-status');
+
+            // Reset UI first
+            requestContainer.classList.add('hidden');
+            rematchBtn.classList.remove('hidden');
+            rematchBtn.disabled = false;
+            rematchBtn.innerText = '🔄 Pedir Revancha';
+            statusText.classList.add('hidden');
+
+            if (rematchRequestedBy) {
+                if (rematchRequestedBy === sessionToken) {
+                    // I requested it
+                    rematchBtn.disabled = true;
+                    rematchBtn.innerText = 'Esperando respuesta...';
+                    statusText.innerText = 'Esperando a que el oponente acepte...';
+                    statusText.classList.remove('hidden');
+                    statusText.style.color = '#666';
+                } else {
+                    // Opponent requested it
+                    requestContainer.classList.remove('hidden');
+                    rematchBtn.classList.add('hidden');
+                }
+            }
+        } else {
+            document.getElementById('game-over-screen').classList.add('hidden');
+        }
+
+        // Update Local Stats
+        if (isGameOver && winner) {
+            const isWin = winner === sessionToken;
+            updateStats(game.opponentName, isWin, roomCode);
+        }
+    },
+);
 
 // Update stats when game ends in real-time
 socket.on('game_over', ({ reason, loser, winner }) => {
@@ -382,7 +401,7 @@ socket.on('room_deleted', ({ roomCode }) => {
         window.history.pushState({}, '', url);
     } else {
         // Just show a toast/notification if we are in lobby
-        // Simple alert for now, or a custom toast if we had one. 
+        // Simple alert for now, or a custom toast if we had one.
         // Since my_games_update will remove it from the list, maybe just a log is enough?
         // Let's use a non-intrusive notification if possible.
         // For now, let's rely on the list update visual cue, but log it.
@@ -408,13 +427,13 @@ socket.on('rematch_requested', () => {
 
 socket.on('rematch_rejected', () => {
     const statusText = document.getElementById('rematch-status');
-    statusText.innerText = "El oponente rechazó la revancha.";
+    statusText.innerText = 'El oponente rechazó la revancha.';
     statusText.classList.remove('hidden');
-    statusText.style.color = "#f44336";
+    statusText.style.color = '#f44336';
 
     // Re-enable button? Or just leave it.
     document.getElementById('rematch-btn').disabled = false;
-    document.getElementById('rematch-btn').innerText = "Pedir Revancha";
+    document.getElementById('rematch-btn').innerText = 'Pedir Revancha';
 
     if (game) game.rematchRequestedBy = null;
 });
@@ -430,7 +449,7 @@ socket.on('game_restarted', ({ numbers, currentTurn }) => {
     document.getElementById('rematch-status').classList.add('hidden');
     document.getElementById('rematch-btn').classList.remove('hidden');
     document.getElementById('rematch-btn').disabled = false;
-    document.getElementById('rematch-btn').innerText = "🔄 Pedir Revancha";
+    document.getElementById('rematch-btn').innerText = '🔄 Pedir Revancha';
 
     if (game) {
         // Reset local game state
@@ -442,8 +461,6 @@ socket.on('game_restarted', ({ numbers, currentTurn }) => {
         game.startGame(numbers, currentTurn);
     }
 });
-
-
 
 // UI Events
 const restartBtn = document.getElementById('restart-btn');
@@ -469,14 +486,14 @@ rematchBtn.addEventListener('click', () => {
     if (game && game.roomCode) {
         socket.emit('request_rematch', { roomCode: game.roomCode });
         rematchBtn.disabled = true;
-        rematchBtn.innerText = "Esperando respuesta...";
+        rematchBtn.innerText = 'Esperando respuesta...';
 
         if (game) game.rematchRequestedBy = sessionToken; // I requested it
 
         const statusText = document.getElementById('rematch-status');
-        statusText.innerText = "Esperando a que el oponente acepte...";
+        statusText.innerText = 'Esperando a que el oponente acepte...';
         statusText.classList.remove('hidden');
-        statusText.style.color = "#666";
+        statusText.style.color = '#666';
     }
 });
 
@@ -521,12 +538,12 @@ exportBtn.addEventListener('click', () => {
         // Prepare Player Objects
         const player1 = {
             name: myName,
-            isWinner: game.winner ? (game.winner === sessionToken) : null
+            isWinner: game.winner ? game.winner === sessionToken : null,
         };
 
         const player2 = {
             name: opponentName,
-            isWinner: game.winner ? (game.winner !== sessionToken) : null
+            isWinner: game.winner ? game.winner !== sessionToken : null,
         };
 
         const dataUrl = game.exportToImage(player1, player2, resultText, resultColor, footerUrl);
@@ -536,8 +553,6 @@ exportBtn.addEventListener('click', () => {
         link.click();
     }
 });
-
-
 
 // Load Username
 const savedUsername = localStorage.getItem('username');
@@ -582,7 +597,7 @@ socket.on('my_games_list', (games) => {
         return;
     }
 
-    // Sort games: 
+    // Sort games:
     // 1. My Turn
     // 2. Rematch Requested (by me or opponent)
     // 3. Waiting for Opponent
@@ -593,7 +608,7 @@ socket.on('my_games_list', (games) => {
         return scoreB - scoreA; // Descending order
     });
 
-    games.forEach(g => {
+    games.forEach((g) => {
         const div = document.createElement('div');
         div.className = 'game-item';
         div.style.cssText = `
@@ -611,19 +626,24 @@ socket.on('my_games_list', (games) => {
         if (g.isGameOver) {
             if (g.rematchRequestedBy) {
                 if (g.rematchRequestedBy === sessionToken) {
-                    statusHtml = '<span style="color: #666; font-style: italic;">Esperando revancha...</span>';
+                    statusHtml =
+                        '<span style="color: #666; font-style: italic;">Esperando revancha...</span>';
                 } else {
-                    statusHtml = '<span style="color: var(--accent-color); font-weight: bold;">¡Revancha pedida!</span>';
+                    statusHtml =
+                        '<span style="color: var(--accent-color); font-weight: bold;">¡Revancha pedida!</span>';
                 }
             } else {
                 if (g.winner === sessionToken) {
-                    statusHtml = '<span style="color: #4caf50; font-weight: bold;">¡Ganaste!</span>';
+                    statusHtml =
+                        '<span style="color: #4caf50; font-weight: bold;">¡Ganaste!</span>';
                 } else {
                     statusHtml = '<span style="color: #f44336; font-weight: bold;">Perdiste</span>';
                 }
             }
         } else {
-            statusHtml = g.isMyTurn ? '<span style="color: var(--accent-color); font-weight: bold;">¡Tu Turno!</span>' : 'Esperando...';
+            statusHtml = g.isMyTurn
+                ? '<span style="color: var(--accent-color); font-weight: bold;">¡Tu Turno!</span>'
+                : 'Esperando...';
         }
 
         div.innerHTML = `
@@ -646,12 +666,17 @@ socket.on('my_games_list', (games) => {
         const deleteBtn = div.querySelector('.delete-btn');
         deleteBtn.addEventListener('click', (e) => {
             e.stopPropagation(); // Don't trigger enterGame
-            if (confirm(`¿Estás seguro que quieres abandonar la sala ${g.roomCode}? Se borrará de tu lista.`)) {
+            if (
+                confirm(
+                    `¿Estás seguro que quieres abandonar la sala ${g.roomCode}? Se borrará de tu lista.`,
+                )
+            ) {
                 socket.emit('leave_room', { roomCode: g.roomCode });
                 // Optimistic removal
                 div.remove();
                 if (myGamesList.children.length === 0) {
-                    myGamesList.innerHTML = '<p style="opacity: 0.6;">No tienes partidas activas.</p>';
+                    myGamesList.innerHTML =
+                        '<p style="opacity: 0.6;">No tienes partidas activas.</p>';
                 }
             }
         });
@@ -673,7 +698,7 @@ backToMenuBtn.addEventListener('click', () => {
     url.searchParams.delete('room');
     window.history.pushState({}, '', url);
 
-    game = null; // Clear current game instance to avoid conflicts? Or keep it? 
+    game = null; // Clear current game instance to avoid conflicts? Or keep it?
     // Better to clear it or pause it.
     socket.emit('get_my_games'); // Refresh list
 });
@@ -700,12 +725,12 @@ function enterGame(roomCode, opponentName = null) {
 
     window.game = game; // Expose for E2E
 
-        // Only clear if it's a DIFFERENT room (or if we want to force reset)
-        // If it's the same room, we might be reconnecting, so keep data until sync arrives
-        if (game.roomCode !== roomCode) {
-            game.lines = [];
-            game.numbers = [];
-        }
+    // Only clear if it's a DIFFERENT room (or if we want to force reset)
+    // If it's the same room, we might be reconnecting, so keep data until sync arrives
+    if (game.roomCode !== roomCode) {
+        game.lines = [];
+        game.numbers = [];
+    }
     requestAnimationFrame(() => game.resizeCanvas());
 
     if (opponentName) {
@@ -729,7 +754,6 @@ function getGameSortScore(g) {
     return 1; // Waiting for opponent
 }
 
-
 // --- Local Statistics ---
 
 function loadStats() {
@@ -741,7 +765,7 @@ function loadStats() {
         totalWins: 0,
         totalLosses: 0,
         opponents: {}, // { "Name": { wins: 0, losses: 0 } }
-        processedGames: [] // List of roomCodes
+        processedGames: [], // List of roomCodes
     };
 }
 
@@ -759,7 +783,7 @@ function updateStats(opponentName, isWin, roomCode) {
 
     // Ignore invalid opponents (single player sessions that ended/reset)
     if (!opponentName || opponentName === 'Oponente' || opponentName === 'Esperando...') {
-        console.log("Stats ignored: No valid opponent joined");
+        console.log('Stats ignored: No valid opponent joined');
         return;
     }
 
@@ -773,7 +797,7 @@ function updateStats(opponentName, isWin, roomCode) {
     }
 
     // Update Opponent Stats
-    if (!opponentName) opponentName = "Desconocido";
+    if (!opponentName) opponentName = 'Desconocido';
 
     if (!stats.opponents[opponentName]) {
         stats.opponents[opponentName] = { wins: 0, losses: 0 };
@@ -786,7 +810,7 @@ function updateStats(opponentName, isWin, roomCode) {
     }
 
     saveStats(stats);
-    console.log("Stats updated:", stats);
+    console.log('Stats updated:', stats);
 }
 
 function showStats() {
@@ -807,7 +831,8 @@ function showStats() {
     });
 
     if (sortedOpponents.length === 0) {
-        list.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">Aún no hay estadísticas.</div>';
+        list.innerHTML =
+            '<div style="text-align: center; padding: 20px; color: #666;">Aún no hay estadísticas.</div>';
     } else {
         sortedOpponents.forEach(([name, data]) => {
             const item = document.createElement('div');

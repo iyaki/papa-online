@@ -34,16 +34,24 @@ export class Game {
         window.addEventListener('resize', this.resizeCanvas);
 
         // Touch support
-        this.canvas.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            const touch = e.touches[0];
-            this.handleMouseDown({ clientX: touch.clientX, clientY: touch.clientY });
-        }, { passive: false });
-        this.canvas.addEventListener('touchmove', (e) => {
-            e.preventDefault();
-            const touch = e.touches[0];
-            this.handleMouseMove({ clientX: touch.clientX, clientY: touch.clientY });
-        }, { passive: false });
+        this.canvas.addEventListener(
+            'touchstart',
+            (e) => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                this.handleMouseDown({ clientX: touch.clientX, clientY: touch.clientY });
+            },
+            { passive: false },
+        );
+        this.canvas.addEventListener(
+            'touchmove',
+            (e) => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                this.handleMouseMove({ clientX: touch.clientX, clientY: touch.clientY });
+            },
+            { passive: false },
+        );
         window.addEventListener('touchend', (e) => {
             this.handleMouseUp();
         });
@@ -58,23 +66,13 @@ export class Game {
 
         this.socket.on('game_over', ({ reason, loser }) => {
             console.log('Game Over Event:', { reason, loser, myToken: this.token });
-            const msg = loser === this.token ? "¡Perdiste! " + reason : "¡Ganaste! El oponente perdió.";
+            const msg =
+                loser === this.token ? '¡Perdiste! ' + reason : '¡Ganaste! El oponente perdió.';
             this.gameOver(msg);
         });
 
         // Delay initial resize to ensure DOM layout is applied
         requestAnimationFrame(() => this.resizeCanvas());
-    }
-
-    startGame(numbers, currentTurn) {
-        this.numbers = numbers;
-        this.currentNumber = 1;
-        this.lines = [];
-        this.currentLine = null;
-        this.isGameOver = false;
-        this.gameStartTime = Date.now(); // Track start time
-        this.updateTurn(currentTurn);
-        this.draw();
     }
 
     syncState(numbers, lines, currentNumber, currentTurn, isGameOver) {
@@ -86,16 +84,16 @@ export class Game {
 
         if (this.isGameOver) {
             document.getElementById('game-over-screen').classList.remove('hidden');
-            document.getElementById('game-over-message').innerText = "Juego Terminado (Reconexión)";
+            document.getElementById('game-over-message').innerText = 'Juego Terminado (Reconexión)';
         }
 
         this.draw();
     }
 
     updateTurn(currentTurnId) {
-        this.isMyTurn = (currentTurnId === this.myPlayerId);
+        this.isMyTurn = currentTurnId === this.myPlayerId;
         const display = document.getElementById('current-player-display');
-        display.innerText = this.isMyTurn ? "Tu Turno" : "Turno del Oponente";
+        display.innerText = this.isMyTurn ? 'Tu Turno' : 'Turno del Oponente';
 
         // Remove both classes first
         display.classList.remove('my-turn', 'opponent-turn');
@@ -123,7 +121,7 @@ export class Game {
         const scaleY = this.canvas.height / rect.height;
         return {
             x: (e.clientX - rect.left) * scaleX,
-            y: (e.clientY - rect.top) * scaleY
+            y: (e.clientY - rect.top) * scaleY,
         };
     }
 
@@ -132,7 +130,7 @@ export class Game {
 
         const pos = this.getMousePos(e);
 
-        const targetNum = this.numbers.find(n => n.value === this.currentNumber);
+        const targetNum = this.numbers.find((n) => n.value === this.currentNumber);
         if (targetNum && this.isNear(pos, targetNum)) {
             // Start a new path
             this.currentLine = [{ x: targetNum.x, y: targetNum.y }];
@@ -146,15 +144,20 @@ export class Game {
 
         // Add point to path (throttle distance to avoid too many points)
         const lastPoint = this.currentLine[this.currentLine.length - 1];
-        const dist = Math.sqrt(Math.pow(pos.x - lastPoint.x, 2) + Math.pow(pos.y - lastPoint.y, 2));
+        const dist = Math.sqrt((pos.x - lastPoint.x) ** 2 + (pos.y - lastPoint.y) ** 2);
 
-        if (dist > 5) { // Minimum distance between points
+        if (dist > 5) {
+            // Minimum distance between points
             this.currentLine.push(pos);
 
             // Check for collisions with the NEW segment
             if (this.checkCollisions(this.currentLine)) {
-                this.socket.emit('game_over', { roomCode: this.roomCode, reason: "Cruzó una línea", lastLine: this.currentLine });
-                this.gameOver("¡Cruzaste una línea! Perdiste.");
+                this.socket.emit('game_over', {
+                    roomCode: this.roomCode,
+                    reason: 'Cruzó una línea',
+                    lastLine: this.currentLine,
+                });
+                this.gameOver('¡Cruzaste una línea! Perdiste.');
             }
 
             this.draw();
@@ -165,18 +168,25 @@ export class Game {
         if (!this.currentLine || this.isGameOver) return;
 
         const lastPoint = this.currentLine[this.currentLine.length - 1];
-        const nextNum = this.numbers.find(n => n.value === this.currentNumber + 1);
+        const nextNum = this.numbers.find((n) => n.value === this.currentNumber + 1);
 
         if (nextNum && this.isNear(lastPoint, nextNum)) {
             // Snap to center
             this.currentLine.push({ x: nextNum.x, y: nextNum.y });
 
             if (this.checkCollisions(this.currentLine)) {
-                this.socket.emit('game_over', { roomCode: this.roomCode, reason: "Cruzó una línea", lastLine: this.currentLine });
-                this.gameOver("¡Cruzaste una línea! Perdiste.");
+                this.socket.emit('game_over', {
+                    roomCode: this.roomCode,
+                    reason: 'Cruzó una línea',
+                    lastLine: this.currentLine,
+                });
+                this.gameOver('¡Cruzaste una línea! Perdiste.');
             } else {
                 // Valid Move
-                this.socket.emit('submit_move', { roomCode: this.roomCode, line: this.currentLine });
+                this.socket.emit('submit_move', {
+                    roomCode: this.roomCode,
+                    line: this.currentLine,
+                });
                 this.currentLine = null;
                 this.isMyTurn = false;
                 this.draw();
@@ -189,13 +199,13 @@ export class Game {
     }
 
     isNear(p1, p2) {
-        const dist = Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
+        const dist = Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2);
         return dist < 20;
     }
 
     checkCollisions(path) {
         // Define Safe Zone around the starting number
-        const startNum = this.numbers.find(n => n.value === this.currentNumber);
+        const startNum = this.numbers.find((n) => n.value === this.currentNumber);
         const safeZone = startNum ? { x: startNum.x, y: startNum.y, radius: 15 } : null;
 
         // Check against all existing lines
@@ -271,7 +281,10 @@ export class Game {
         `;
 
         // Insert after message if not already there
-        if (!message.nextElementSibling || !message.nextElementSibling.classList.contains('game-stats')) {
+        if (
+            !message.nextElementSibling ||
+            !message.nextElementSibling.classList.contains('game-stats')
+        ) {
             statsDiv.classList.add('game-stats');
             message.parentNode.insertBefore(statsDiv, message.nextSibling);
         }
@@ -318,7 +331,7 @@ export class Game {
         this.ctx.lineCap = 'round';
         this.ctx.lineJoin = 'round';
 
-        this.lines.forEach(path => {
+        this.lines.forEach((path) => {
             if (!path) return; // Skip null paths
             this.ctx.strokeStyle = '#2c3e50'; // Dark ink color
             this.ctx.beginPath();
@@ -347,7 +360,7 @@ export class Game {
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
 
-        this.numbers.forEach(num => {
+        this.numbers.forEach((num) => {
             // Draw circle background (paper cutout or drawn circle?)
             // Let's make it look like a drawn circle
             this.ctx.beginPath();
@@ -412,10 +425,16 @@ export class Game {
         ctx.strokeStyle = '#e0e0e0';
         ctx.lineWidth = 1;
         for (let x = 0; x < exportCanvas.width; x += 20) {
-            ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, this.canvas.height); ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, this.canvas.height);
+            ctx.stroke();
         }
         for (let y = 0; y < this.canvas.height; y += 20) {
-            ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(exportCanvas.width, y); ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(exportCanvas.width, y);
+            ctx.stroke();
         }
 
         // Draw Game Content
@@ -429,9 +448,9 @@ export class Game {
         // Player Names Logic
         ctx.font = 'bold 28px "Gochi Hand", cursive, sans-serif';
 
-        const p1Text = `${player1.name} ${player1.isWinner ? '🏆' : (player1.isWinner === false ? '💔' : '')}`;
-        const p2Text = `${player2.name} ${player2.isWinner ? '🏆' : (player2.isWinner === false ? '💔' : '')}`;
-        const vsText = " vs ";
+        const p1Text = `${player1.name} ${player1.isWinner ? '🏆' : player1.isWinner === false ? '💔' : ''}`;
+        const p2Text = `${player2.name} ${player2.isWinner ? '🏆' : player2.isWinner === false ? '💔' : ''}`;
+        const vsText = ' vs ';
 
         // Measure widths to center everything
         const p1Width = ctx.measureText(p1Text).width;
@@ -442,7 +461,11 @@ export class Game {
         let startX = (exportCanvas.width - totalWidth) / 2;
 
         // Draw Player 1
-        ctx.fillStyle = player1.isWinner ? '#27ae60' : (player1.isWinner === false ? '#c0392b' : '#333');
+        ctx.fillStyle = player1.isWinner
+            ? '#27ae60'
+            : player1.isWinner === false
+              ? '#c0392b'
+              : '#333';
         ctx.textAlign = 'left';
         ctx.fillText(p1Text, startX, footerY);
         startX += p1Width;
@@ -453,7 +476,11 @@ export class Game {
         startX += vsWidth;
 
         // Draw Player 2
-        ctx.fillStyle = player2.isWinner ? '#27ae60' : (player2.isWinner === false ? '#c0392b' : '#333');
+        ctx.fillStyle = player2.isWinner
+            ? '#27ae60'
+            : player2.isWinner === false
+              ? '#c0392b'
+              : '#333';
         ctx.fillText(p2Text, startX, footerY);
 
         // Result

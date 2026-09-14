@@ -2,7 +2,6 @@ const { test, expect } = require('@playwright/test');
 const { makeMove, setupGame } = require('./utils');
 
 test.describe('Rematch Functionality', () => {
-
     test('Full Rematch Flow (Request -> Accept -> New Game)', async ({ browser }) => {
         const { page1, page2, context1, context2 } = await setupGame(browser);
 
@@ -21,7 +20,9 @@ test.describe('Rematch Functionality', () => {
         // Verify P1 UI update
         await expect(page1.locator('#rematch-btn')).toBeDisabled();
         await expect(page1.locator('#rematch-btn')).toContainText('Esperando respuesta');
-        await expect(page1.locator('#rematch-status')).toContainText('Esperando a que el oponente acepte');
+        await expect(page1.locator('#rematch-status')).toContainText(
+            'Esperando a que el oponente acepte',
+        );
 
         // Verify P2 Receives Request
         await expect(page2.locator('#rematch-request-container')).toBeVisible(); // The modal/overlay?
@@ -43,17 +44,17 @@ test.describe('Rematch Functionality', () => {
 
         // Check turn logic: P2 accepted, so P2 should start?
         // Server logic: "currentTurn: socket.id" (requester? No, let's check server.js)
-        // server.js: 
+        // server.js:
         // socket.on('respond_rematch', ({ accept }) => { if (accept) { ... currentTurn: socket.id ... } })
         // So the acceptor (P2) starts first.
-        
+
         await expect(page2.locator('#current-player-display')).toHaveClass(/my-turn/);
         await expect(page1.locator('#current-player-display')).toHaveClass(/opponent-turn/);
 
         // 6. Verify they can play again
         // P2 makes valid move
         await makeMove(page2, 1, 2);
-        
+
         await context1.close();
         await context2.close();
     });

@@ -1,6 +1,6 @@
 /**
  * Papa Online Server - Unit Tests
- * 
+ *
  * Tests for core game logic and helper functions
  */
 
@@ -16,7 +16,7 @@ describe('Room Management - Helper Functions', () => {
         expect(result[0]).toHaveProperty('y');
 
         // Verify points are within bounds
-        result.forEach(point => {
+        result.forEach((point) => {
             expect(point.x).toBeGreaterThanOrEqual(40);
             expect(point.x).toBeLessThanOrEqual(600 - 40);
             expect(point.y).toBeGreaterThanOrEqual(40);
@@ -25,9 +25,7 @@ describe('Room Management - Helper Functions', () => {
     });
 
     test('checkOverlap should detect close points', () => {
-        const existingNumbers = [
-            { value: 1, x: 100, y: 100 }
-        ];
+        const existingNumbers = [{ value: 1, x: 100, y: 100 }];
 
         const closePoint = { value: 2, x: 110, y: 110 };
         const farPoint = { value: 2, x: 200, y: 200 };
@@ -70,7 +68,7 @@ describe('Game Logic', () => {
             maxNumber: 20,
             isComplete: function () {
                 return this.currentNumber > this.maxNumber;
-            }
+            },
         };
 
         expect(gameState.isComplete()).toBe(false);
@@ -96,13 +94,16 @@ describe('Game Logic', () => {
 describe('Session Management', () => {
     test('should generate valid UUID format', () => {
         const generateUUID = () => {
-            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-                var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+                var r = (Math.random() * 16) | 0,
+                    v = c === 'x' ? r : (r & 0x3) | 0x8;
                 return v.toString(16);
             });
         };
 
         const uuid = generateUUID();
-        expect(uuid).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+        expect(uuid).toMatch(
+            /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
+        );
     });
 });
