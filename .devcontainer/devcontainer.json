@@ -1,83 +1,80 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/universal
 {
-	"name": "Papa online",
-	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"image": "mcr.microsoft.com/devcontainers/universal:5-linux",
-	"mounts": [
-		// Global vercel skills config
-		{
-			"source": "${localWorkspaceFolder}/.agents/.skill-lock.json",
-			"target": "/home/codespace/.agents/.skill-lock.json",
-			"type": "bind"
-		},
-		// GitHub CLI config
-		{
-			"source": "${localEnv:HOME}/.config/gh/",
-			"target": "/home/codespace/.config/gh/",
-			"type": "bind"
-		},
-		// Override Git LFS artifacts script to avoid conflicts with pre configured git hooks (e.g, lefthook).
-		{
-			"source": "${localWorkspaceFolder}/.devcontainer/pull-git-lfs-artifacts-override.sh",
-			"target": "/usr/local/share/pull-git-lfs-artifacts.sh",
-			"type": "bind"
-		},
-		{
-			"source": "${localEnv:HOME}/.omp",
-			"target": "/home/codespace/.omp",
-			"type": "bind"
-		}
-	],
-	"remoteEnv": {
-		"PATH": "${containerEnv:PATH}:scripts",
-		"EDITOR": "code --wait",
-		"VISUAL": "code --wait",
-		"XDG_CONFIG_HOME": "/home/codespace/.config",
-		"XDG_CACHE_HOME": "/home/codespace/.cache",
-		"XDG_DATA_HOME": "/home/codespace/.local/share",
-		"XDG_STATE_HOME": "/home/codespace/.local/state"
-	},
-	"features": {
-		"ghcr.io/devcontainers/features/common-utils:": {
-			"installZsh": false,
-			"installOhMyZsh": false,
-			"installOhMyZshConfig": false,
-			"username": "automatic"
-		},
-		// "ghcr.io/devcontainers/features/docker-outside-of-docker:": {
-		// 	"moby": false,
-		// 	"installDockerBuildx": true,
-		// 	"installDockerComposeSwitch": true,
-		// 	"version": "latest",
-		// 	"dockerDashComposeVersion": "v2"
-		// },
-		"ghcr.io/devcontainers/features/git:": {
-			"ppa": true,
-			"version": "latest"
-		},
-		"ghcr.io/devcontainers-extra/features/shfmt:": {},
-		"ghcr.io/iyaki/devcontainer-features/oh-my-pi:": {},
-		"ghcr.io/iyaki/devcontainer-features/lefthook:": {}
-	},
-	"postCreateCommand": {
-		"Install npm packages": "npm install",
-		"Setup lefthook": "lefthook install"
-	},
-	"customizations": {
-		"vscode": {
-			"extensions": [
-				"editorconfig.editorconfig",
-				"nhoizey.gremlins"
-			]
-		}
-	}
-	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// "forwardPorts": [],
-	// Use 'postCreateCommand' to run commands after the container is created.
-	// "postCreateCommand": "uname -a",
-	// Configure tool-specific properties.
-	// "customizations": {},
-	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
-	// "remoteUser": "root"
+    "name": "Papa online",
+    // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+    "image": "mcr.microsoft.com/devcontainers/universal:5-linux",
+    "mounts": [
+        // Global vercel skills config
+        {
+            "source": "${localWorkspaceFolder}/.agents/.skill-lock.json",
+            "target": "/home/codespace/.agents/.skill-lock.json",
+            "type": "bind"
+        },
+        // GitHub CLI config
+        {
+            "source": "${localEnv:HOME}/.config/gh/",
+            "target": "/home/codespace/.config/gh/",
+            "type": "bind"
+        },
+        // Override Git LFS artifacts script to avoid conflicts with pre configured git hooks (e.g, lefthook).
+        {
+            "source": "${localWorkspaceFolder}/.devcontainer/pull-git-lfs-artifacts-override.sh",
+            "target": "/usr/local/share/pull-git-lfs-artifacts.sh",
+            "type": "bind"
+        },
+        {
+            "source": "${localEnv:HOME}/.omp",
+            "target": "/home/codespace/.omp",
+            "type": "bind"
+        }
+    ],
+    "remoteEnv": {
+        "PATH": "${containerEnv:PATH}:scripts",
+        "EDITOR": "code --wait",
+        "VISUAL": "code --wait",
+        "XDG_CONFIG_HOME": "/home/codespace/.config",
+        "XDG_CACHE_HOME": "/home/codespace/.cache",
+        "XDG_DATA_HOME": "/home/codespace/.local/share",
+        "XDG_STATE_HOME": "/home/codespace/.local/state"
+    },
+    "features": {
+        "ghcr.io/devcontainers/features/common-utils:": {
+            "installZsh": false,
+            "installOhMyZsh": false,
+            "installOhMyZshConfig": false,
+            "username": "automatic"
+        },
+        // "ghcr.io/devcontainers/features/docker-outside-of-docker:": {
+        // 	"moby": false,
+        // 	"installDockerBuildx": true,
+        // 	"installDockerComposeSwitch": true,
+        // 	"version": "latest",
+        // 	"dockerDashComposeVersion": "v2"
+        // },
+        "ghcr.io/devcontainers/features/git:": {
+            "ppa": true,
+            "version": "latest"
+        },
+        "ghcr.io/devcontainers-extra/features/shfmt:": {},
+        "ghcr.io/iyaki/devcontainer-features/oh-my-pi:": {},
+        "ghcr.io/iyaki/devcontainer-features/lefthook:": {}
+    },
+    "postCreateCommand": {
+        "Install npm packages": "npm install",
+        "Setup lefthook": "lefthook install"
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": ["editorconfig.editorconfig", "nhoizey.gremlins"]
+        }
+    }
+    // Use 'forwardPorts' to make a list of ports inside the container available locally.
+    // "forwardPorts": [],
+    // Use 'postCreateCommand' to run commands after the container is created.
+    // "postCreateCommand": "uname -a",
+    // Configure tool-specific properties.
+    // "customizations": {},
+    // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+    // "remoteUser": "root"
 }
