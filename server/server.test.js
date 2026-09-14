@@ -4,7 +4,7 @@
  * Tests for core game logic and helper functions
  */
 
-const { generateNumbers, checkOverlap } = require('./server');
+const { generateNumbers, checkOverlap, getVersionInfo } = require('./server');
 
 describe('Room Management - Helper Functions', () => {
     test('generateNumbers should create correct number of points', () => {
@@ -105,5 +105,17 @@ describe('Session Management', () => {
         expect(uuid).toMatch(
             /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
         );
+    });
+});
+
+describe('Version Info', () => {
+    test('getVersionInfo returns injected APP_VERSION and APP_BUILT_AT', () => {
+        expect(
+            getVersionInfo({ APP_VERSION: 'a1b2c3d', APP_BUILT_AT: '2026-09-14T21:05:00Z' }),
+        ).toEqual({ version: 'a1b2c3d', builtAt: '2026-09-14T21:05:00Z' });
+    });
+
+    test('getVersionInfo falls back to dev/null when env is unset', () => {
+        expect(getVersionInfo({})).toEqual({ version: 'dev', builtAt: null });
     });
 });
