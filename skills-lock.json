@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "spec-creator": {
+      "source": "iyaki/specralph",
+      "sourceType": "github",
+      "skillPath": ".agents/skills/spec-creator/SKILL.md",
+      "computedHash": "f9bb9884230313ba4a62ecc4d6a299b85c9df4584c40b80504f6f43d90defff8"
+    }
+  }
+}

@@ -6,13 +6,14 @@ Guidance for AI agents (and humans) working in this repo.
 
 For any change beyond a one-line fix or dependency bump:
 
-1. Create `specs/<change-name>/` from `specs/_TEMPLATE/` and write `spec.md`.
-2. Do not write implementation code until `spec.md` exists.
-3. Derive `tasks.md` from the spec — no tasks without a matching requirement.
-4. The first implementation task is always writing the failing tests for each
-   acceptance criterion.
-5. A change is done when `npm run verify` is green and every acceptance
-   criterion lists a passing test.
+1. Author `specs/<change-name>/spec.md` with the `spec-creator` skill
+   (from [iyaki/specralph](https://github.com/iyaki/specralph), installed at
+   `.agents/skills/spec-creator/`), following its `SPEC_TEMPLATE.md`.
+2. Do not write implementation code until the spec exists and is approved.
+3. The first implementation step is always writing the failing tests for the
+   spec's Verifications.
+4. A change is done when `npm run verify` is green, every Verifications item
+   lists a passing test, and the spec's `Status` is `Implemented`.
 
 See `specs/README.md` for the full workflow.
 
