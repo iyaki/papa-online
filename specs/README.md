@@ -21,5 +21,9 @@ fix or dependency bump starts here, as a spec, before any implementation code.
 
 ## Lifecycle
 
-Specs live in git alongside the change and are kept after merge: they are the
-decision record for why the code looks the way it does.
+Specs live in git alongside the change and are kept after merge as the
+per-change record of what was done and which tests prove it.
+
+Architecture-level decisions (frameworks, structure, process) are recorded
+separately as ADRs in `docs/adr/` — a spec says what changed, an ADR says why
+the codebase is shaped the way it is.
