@@ -1,7 +1,8 @@
 const express = require('express');
-const http = require('http');
+const http = require('node:http');
 const { Server } = require('socket.io');
-const path = require('path');
+const path = require('node:path');
+const fs = require('node:fs');
 
 const app = express();
 const server = http.createServer(app);
@@ -12,8 +13,35 @@ const io = new Server(server, {
     },
 });
 
-// Serve static files from client
-app.use(express.static(path.join(__dirname, '../client')));
+const CLIENT_DIR = path.join(__dirname, '../client');
+
+function getVersionInfo(env = process.env) {
+    return { version: env.APP_VERSION || 'dev', builtAt: env.APP_BUILT_AT || null };
+}
+
+app.get('/api/version', (_req, res) => {
+    res.json(getVersionInfo());
+});
+
+app.get('/', (_req, res) => {
+    const html = fs
+        .readFileSync(path.join(CLIENT_DIR, 'index.html'), 'utf8')
+        .replaceAll('__APP_VERSION__', getVersionInfo().version);
+    res.set('Cache-Control', 'no-cache').type('html').send(html);
+});
+
+app.use(
+    '/v/:version',
+    express.static(CLIENT_DIR, {
+        setHeaders: (res) => res.setHeader('Cache-Control', 'public, max-age=31536000, immutable'),
+    }),
+);
+
+app.use(
+    express.static(CLIENT_DIR, {
+        setHeaders: (res) => res.setHeader('Cache-Control', 'no-cache'),
+    }),
+);
 
 // Game State
 const rooms = {};
@@ -481,4 +509,5 @@ module.exports = {
     rooms,
     generateNumbers,
     checkOverlap,
+    getVersionInfo,
 };

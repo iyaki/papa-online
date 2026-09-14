@@ -434,4 +434,68 @@ describe('Papa Online Server - Integration Tests', () => {
 
         clientSocket1.connect();
     }, 10000);
+    describe('Versioning and cache headers', () => {
+        test('GET /api/version returns version identity JSON', async () => {
+            const res = await fetch(`http://localhost:${httpServerAddr.port}/api/version`);
+            expect(res.status).toBe(200);
+            const body = await res.json();
+            expect(typeof body.version).toBe('string');
+            expect(body.version.length).toBeGreaterThan(0);
+            expect('builtAt' in body).toBe(true);
+        });
+
+        test('GET /api/version reflects APP_VERSION/APP_BUILT_AT set at request time', async () => {
+            process.env.APP_VERSION = 'testsha';
+            process.env.APP_BUILT_AT = '2026-09-14T21:05:00Z';
+            try {
+                const res = await fetch(`http://localhost:${httpServerAddr.port}/api/version`);
+                expect(await res.json()).toEqual({
+                    version: 'testsha',
+                    builtAt: '2026-09-14T21:05:00Z',
+                });
+            } finally {
+                delete process.env.APP_VERSION;
+                delete process.env.APP_BUILT_AT;
+            }
+        });
+
+        test('GET / serves HTML with substituted version, no-cache, and versioned asset URLs', async () => {
+            process.env.APP_VERSION = 'testsha';
+            try {
+                const res = await fetch(`http://localhost:${httpServerAddr.port}/`);
+                expect(res.status).toBe(200);
+                expect(res.headers.get('cache-control')).toBe('no-cache');
+                const html = await res.text();
+                expect(html).toContain('/v/testsha/main.js');
+                expect(html).toContain('/v/testsha/style.css');
+                expect(html).toContain('Versión: testsha');
+                expect(html).not.toContain('__APP_VERSION__');
+            } finally {
+                delete process.env.APP_VERSION;
+            }
+        });
+
+        test('GET /v/<version>/ assets serve with immutable caching', async () => {
+            for (const asset of ['main.js', 'style.css', 'game.js', 'collision.js']) {
+                const res = await fetch(
+                    `http://localhost:${httpServerAddr.port}/v/testsha/${asset}`,
+                );
+                expect(res.status).toBe(200);
+                expect(res.headers.get('cache-control')).toBe(
+                    'public, max-age=31536000, immutable',
+                );
+            }
+        });
+
+        test('root /main.js legacy path still serves with no-cache', async () => {
+            const res = await fetch(`http://localhost:${httpServerAddr.port}/main.js`);
+            expect(res.status).toBe(200);
+            expect(res.headers.get('cache-control')).toBe('no-cache');
+        });
+
+        test('GET /v/<version>/unknown.js returns 404', async () => {
+            const res = await fetch(`http://localhost:${httpServerAddr.port}/v/testsha/nope.js`);
+            expect(res.status).toBe(404);
+        });
+    });
 });
