@@ -359,4 +359,79 @@ describe('Papa Online Server - Integration Tests', () => {
 
         clientSocket1.connect();
     }, 10000);
+
+    test('rematch > emits game_restarted with roomCode, regenerated numbers, and currentTurn set to the accepting player', (done) => {
+        let roomCode;
+        let originalNumbersLength = 0;
+
+        clientSocket1 = Client(`http://localhost:${httpServerAddr.port}`, {
+            auth: { token: 'test-token-rematch-1' },
+            autoConnect: false,
+        });
+
+        clientSocket2 = Client(`http://localhost:${httpServerAddr.port}`, {
+            auth: { token: 'test-token-rematch-2' },
+            autoConnect: false,
+        });
+
+        clientSocket1.on('game_start', (data) => {
+            originalNumbersLength = data.numbers.length;
+        });
+
+        // Once the game is over, P1 requests a rematch
+        clientSocket1.on('game_over', () => {
+            clientSocket1.emit('request_rematch', { roomCode });
+        });
+
+        // P2 accepts
+        clientSocket2.on('rematch_requested', () => {
+            clientSocket2.emit('respond_rematch', { roomCode, accept: true });
+        });
+
+        let restartCount = 0;
+        const handleRestart = (data) => {
+            expect(data).toHaveProperty('roomCode', roomCode);
+            expect(Array.isArray(data.numbers)).toBe(true);
+            expect(data.numbers).toHaveLength(originalNumbersLength);
+            expect(data).toHaveProperty('currentTurn', clientSocket2.id);
+            restartCount++;
+            if (restartCount === 2) done();
+        };
+
+        clientSocket1.on('game_restarted', handleRestart);
+        clientSocket2.on('game_restarted', handleRestart);
+
+        clientSocket1.on('room_created', (data) => {
+            roomCode = data.roomCode;
+            clientSocket2.connect();
+        });
+
+        // Player 2 gets game_sync, then trigger game over
+        clientSocket2.on('game_sync', () => {
+            setTimeout(() => {
+                clientSocket1.emit('game_over', {
+                    roomCode,
+                    reason: 'Línea cruzada',
+                });
+            }, 100);
+        });
+
+        clientSocket2.on('connect', () => {
+            if (roomCode) {
+                clientSocket2.emit('join_room', {
+                    roomCode,
+                    username: 'RematchPlayer2',
+                });
+            }
+        });
+
+        clientSocket1.on('connect', () => {
+            clientSocket1.emit('create_room', {
+                username: 'RematchPlayer1',
+                pointCount: 5,
+            });
+        });
+
+        clientSocket1.connect();
+    }, 10000);
 });

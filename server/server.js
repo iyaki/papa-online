@@ -436,6 +436,7 @@ io.on('connection', (socket) => {
 
                 // Emit Game Restart to BOTH
                 io.to(roomCode).emit('game_restarted', {
+                    roomCode,
                     numbers: room.numbers,
                     currentTurn: room.currentTurn,
                 });
