@@ -71,12 +71,12 @@ On-screen labels are quoted verbatim in Spanish, as the UI is Spanish.
 1. Check "Siguiente: N" to see which number to connect.
 2. Press on the last connected number (N-1) and, without releasing, drag to
    number N. The stroke is drawn live while you drag.
-3. Release near number N. If the stroke reaches the target, the move is valid:
-   the line stays drawn, "Siguiente" advances to N+1, and the turn passes to
-   the opponent (the indicator switches between "Tu Turno" and "Turno del
-   Oponente").
-4. If you release far from the target, the stroke is discarded and the turn is
-   kept: you can try again.
+3. The move completes automatically the moment the stroke reaches number N —
+   you do not need to release on it: the endpoint snaps to N, "Siguiente"
+   advances to N+1, and the turn passes to the opponent (the indicator
+   switches between "Tu Turno" and "Turno del Oponente").
+4. If you release before the stroke ever reaches N, the stroke is discarded
+   and the turn is kept: you can try again.
 
 **Move-level losing rules** (the offender loses immediately):
 
