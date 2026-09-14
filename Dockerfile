@@ -25,6 +25,12 @@ COPY server ./server
 COPY client ./client
 COPY package.json ./
 
+# Bake version identity at build time
+ARG APP_VERSION=dev
+ARG APP_BUILT_AT=
+ENV APP_VERSION=${APP_VERSION}
+ENV APP_BUILT_AT=${APP_BUILT_AT}
+
 # Expose port
 EXPOSE 3000
 
