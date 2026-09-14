@@ -38,6 +38,19 @@ docker-compose up -d
 docker-compose logs -f
 ```
 
+Images carry their version identity baked in: the short commit SHA and the
+image build time (exposed at `/api/version` and shown in the lobby). To
+build the image locally on the VPS instead of pulling, pass the version
+explicitly (`docker-compose.yml` forwards it as a build arg):
+
+```bash
+APP_VERSION=$(git rev-parse --short HEAD) \
+APP_BUILT_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ) \
+docker-compose up -d --build
+```
+
+CI-built images (`docker-compose pull`) already carry both values.
+
 ### 3. Verify
 
 Visit `http://your-vps-ip:3000` to verify it works.
@@ -50,6 +63,54 @@ git pull origin main
 docker-compose pull
 docker-compose up -d
 ```
+
+Building locally instead of pulling (pulled CI images carry the version
+already):
+
+```bash
+APP_VERSION=$(git rev-parse --short HEAD) \
+APP_BUILT_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ) \
+docker-compose up -d --build
+```
+
+Then confirm the rollout — see "🔖 Verifying the Deployed Version".
+
+## 🔖 Verifying the Deployed Version
+
+Every deployment exposes its identity: the short git SHA of the built
+revision and the image build time.
+
+```bash
+curl -s https://papa.iyaki.ar/api/version
+# {"version":"a1b2c3d","builtAt":"2026-09-14T21:05:00Z"}
+```
+
+The returned `version` must match the deployed revision
+(`git rev-parse --short HEAD`). The lobby shows the same value at the
+bottom of the screen (`Versión: a1b2c3d`).
+
+## ☁️ Cloudflare
+
+The origin's cache headers make Cloudflare's default behaviour correct with
+zero zone configuration:
+
+- `/v/<version>/…` assets are served with
+  `Cache-Control: public, max-age=31536000, immutable`. The URL changes on
+  every deploy, so each version's assets are edge-cached independently and
+  **no purge is ever needed**.
+- `/` and `/api/version` are extensionless, so Cloudflare does not cache
+  them by default — every page load sees the current version.
+
+Verify after deploying:
+
+```bash
+curl -sI https://papa.iyaki.ar/api/version | grep -i cf-cache-status
+# expect: cf-cache-status: DYNAMIC (or BYPASS) — never HIT
+```
+
+If the zone ever gains a "Cache Everything" rule, add a Cache Rule bypassing
+`/` and `/api/*` — otherwise HTML and the version endpoint would be
+edge-cached stale across deploys.
 
 ## 🌐 Setting Up Nginx as a Reverse Proxy (Recommended)
 

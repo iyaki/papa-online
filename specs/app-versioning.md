@@ -1,6 +1,6 @@
 # Spec: App Versioning (deploy identity and versioned assets behind Cloudflare)
 
-Status: Proposed
+Status: Implemented
 
 ## Overview
 
@@ -292,28 +292,37 @@ the revision hash, a timestamp, and the already-public static files.
 
 ## Verifications
 
-Planned tests (written first, per the SDD workflow; citations added when
-passing):
-
 1. `getVersionInfo` returns injected `APP_VERSION`/`APP_BUILT_AT` and falls
-   back to `{"version":"dev","builtAt":null}` when unset — unit tests in
-   `server/server.test.js`.
+   back to `{"version":"dev","builtAt":null}` when unset — PASS:
+   `Version Info > getVersionInfo returns injected APP_VERSION and
+   APP_BUILT_AT`; PASS: `Version Info > getVersionInfo falls back to
+   dev/null when env is unset` (`server/server.test.js`).
 2. `GET /api/version` returns `200` JSON `{"version","builtAt"}`, reflecting
-   env vars when set — integration test in
-   `server/server.integration.test.js`.
+   env vars when set — PASS: `Papa Online Server - Integration Tests >
+   Versioning and cache headers > GET /api/version returns version identity
+   JSON`; PASS: `... > GET /api/version reflects APP_VERSION/APP_BUILT_AT
+   set at request time` (`server/server.integration.test.js`).
 3. `GET /` carries `Cache-Control: no-cache` and its body contains
    `/v/<version>/main.js`, `/v/<version>/style.css`, and
-   `Versión: <version>` (with env vars set in the test) — integration test
-   in `server/server.integration.test.js`.
+   `Versión: <version>` (with env vars set in the test) — PASS: `Papa Online
+   Server - Integration Tests > Versioning and cache headers > GET / serves
+   HTML with substituted version, no-cache, and versioned asset URLs`
+   (`server/server.integration.test.js`).
 4. `GET /v/<version>/main.js` (and `style.css`, `game.js`, `collision.js`)
    return `200` with
    `Cache-Control: public, max-age=31536000, immutable`; the module graph is
-   loadable from the versioned prefix — integration test in
-   `server/server.integration.test.js`.
+   loadable from the versioned prefix — PASS: `Papa Online Server -
+   Integration Tests > Versioning and cache headers > GET /v/<version>/
+   assets serve with immutable caching`; the legacy root path still works
+   with `no-cache` — PASS: `... > root /main.js legacy path still serves
+   with no-cache`; unknown versioned assets return `404` — PASS: `... > GET
+   /v/<version>/unknown.js returns 404`
+   (`server/server.integration.test.js`).
 5. The lobby shows a non-empty `Versión: <version>` line after load, and the
-   game boots from versioned asset URLs — e2e test in
-   `tests/e2e/version.spec.js` (broader play flows already covered by the
-   existing e2e suite loading the app through `/`).
+   game boots from versioned asset URLs — PASS: `App version indicator >
+   lobby shows the running version and loads assets from the versioned
+   prefix` (`tests/e2e/version.spec.js`); broader play flows already covered
+   by the existing e2e suite loading the app through `/`.
 
 ## Appendices
 
