@@ -438,7 +438,9 @@ socket.on('rematch_rejected', () => {
     if (game) game.rematchRequestedBy = null;
 });
 
-socket.on('game_restarted', ({ numbers, currentTurn }) => {
+socket.on('game_restarted', ({ roomCode, numbers, currentTurn }) => {
+    // Ignore restarts for rooms other than the one on screen
+    if (game && roomCode && game.roomCode !== roomCode) return;
     console.log('Game Restarted!', numbers);
 
     // Hide Game Over Screen
@@ -646,12 +648,18 @@ socket.on('my_games_list', (games) => {
                 : 'Esperando...';
         }
 
+        const rematchControls =
+            g.isGameOver && g.rematchRequestedBy && g.rematchRequestedBy !== sessionToken
+                ? `<button class="accept-rematch-btn primary-btn" style="font-size: 0.85rem; padding: 5px 10px;">✓ Aceptar</button>
+                <button class="reject-rematch-btn secondary-btn" style="font-size: 0.85rem; padding: 5px 10px;">✗ Rechazar</button>`
+                : '';
         div.innerHTML = `
             <div style="flex-grow: 1;">
                 <span>Sala: <b>${g.roomCode}</b> vs ${g.opponentName}</span>
                 <br>
                 ${statusHtml}
             </div>
+            ${rematchControls}
             <button class="delete-btn icon-btn" title="Abandonar Partida" style="margin-left: 10px; color: #999; padding: 5px;">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
             </button>
@@ -680,6 +688,24 @@ socket.on('my_games_list', (games) => {
                 }
             }
         });
+
+        // Inline rematch response (pending request from the opponent)
+        const acceptRematchBtn = div.querySelector('.accept-rematch-btn');
+        if (acceptRematchBtn) {
+            acceptRematchBtn.addEventListener('click', (e) => {
+                e.stopPropagation(); // Don't trigger enterGame
+                socket.emit('respond_rematch', { roomCode: g.roomCode, accept: true });
+                enterGame(g.roomCode, g.opponentName);
+            });
+        }
+
+        const rejectRematchBtn = div.querySelector('.reject-rematch-btn');
+        if (rejectRematchBtn) {
+            rejectRematchBtn.addEventListener('click', (e) => {
+                e.stopPropagation(); // Don't trigger enterGame
+                socket.emit('respond_rematch', { roomCode: g.roomCode, accept: false });
+            });
+        }
 
         myGamesList.appendChild(div);
     });

@@ -21,7 +21,7 @@ npm test
 
 ## Test Coverage
 
-**Current coverage**: 14 tests (7 unit + 7 integration) | Coverage: 75% ✅
+**Current coverage**: 15 tests (7 unit + 8 integration) | Coverage: 76% ✅
 
 ### ✅ Unit Tests (7 tests)
 
@@ -38,7 +38,7 @@ npm test
 #### Session Management
 - **UUID generation**: Validates UUID v4 format
 
-### ✅ Integration Tests (7 tests)
+### ✅ Integration Tests (8 tests)
 
 #### Socket.IO Communication
 - **Authenticated connection**: Token verification on handshake
@@ -48,6 +48,8 @@ npm test
 - **Game Over**: Correctly identifies winner and loser
 - **Surrender**: Validates `leave_room` and `player_left` events
 - **My Games List**: Verifies the list of active games
+- **Rematch accept**: verifies `game_restarted` carries `roomCode`, regenerated
+  numbers at the same point count, and the accepting player's turn
 
 ### ✅ E2E Tests (Playwright)
 
@@ -56,7 +58,8 @@ User-visible flows are covered by the Playwright suite in `tests/e2e/`
 
 - **Basic flow**: Player 1 creates a room, Player 2 joins
 - **Win/loss scenarios**: collision moves and turn switching
-- **Rematch flow**: request → accept → new game
+- **Rematch flow**: request → accept (in-game or inline from the lobby) → new
+  game; rejection from the lobby notifies the requester
 
 `npm run verify` builds everything needed and runs server tests + e2e
 (the Playwright config auto-starts the server on port 3000).

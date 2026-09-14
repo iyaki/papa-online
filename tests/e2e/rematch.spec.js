@@ -58,4 +58,68 @@ test.describe('Rematch Functionality', () => {
         await context1.close();
         await context2.close();
     });
+
+    test('Opponent accepts rematch from lobby', async ({ browser }) => {
+        const { page1, page2, context1, context2 } = await setupGame(browser);
+
+        // End the game quickly (P1 crashes); P2 goes back to the lobby
+        await makeMove(page1, 1, 3);
+        await expect(page1.locator('#game-over-message')).toContainText('Perdiste');
+        await page2.click('#restart-btn');
+        await expect(page2.locator('#lobby-screen')).toBeVisible();
+
+        // P1 requests the rematch while P2 is in the lobby
+        await page1.click('#rematch-btn');
+        await expect(page1.locator('#rematch-btn')).toBeDisabled();
+        await expect(page2.locator('#my-games-list .game-item').first()).toContainText(
+            '¡Revancha pedida!',
+        );
+
+        // P2 accepts inline from the lobby row
+        await page2.locator('#my-games-list .accept-rematch-btn').click();
+
+        // P2 lands in the restarted game holding the turn (acceptor starts)
+        await expect(page2.locator('#game-screen')).toBeVisible();
+        await expect(page2.locator('#current-player-display')).toHaveClass(/my-turn/);
+        await expect(page1.locator('#game-over-screen')).toHaveClass(/hidden/);
+
+        // Both players can play the new game (wait for the restarted board:
+        // P2's game object still holds the finished board until the sync lands)
+        await page2.waitForFunction(
+            () => window.game && window.game.lines.length === 0 && window.game.currentNumber === 1,
+        );
+        await makeMove(page2, 1, 2);
+        await expect(page1.locator('#current-player-display')).toHaveClass(/my-turn/);
+
+        await context1.close();
+        await context2.close();
+    });
+
+    test('Opponent rejects rematch from lobby', async ({ browser }) => {
+        const { page1, page2, context1, context2 } = await setupGame(browser);
+
+        await makeMove(page1, 1, 3);
+        await expect(page1.locator('#game-over-message')).toContainText('Perdiste');
+        await page2.click('#restart-btn');
+        await expect(page2.locator('#lobby-screen')).toBeVisible();
+
+        await page1.click('#rematch-btn');
+        await expect(page1.locator('#rematch-btn')).toBeDisabled();
+
+        // P2 rejects inline from the lobby row
+        await page2.locator('#my-games-list .reject-rematch-btn').click();
+
+        // The requester is notified and may ask again
+        await expect(page1.locator('#rematch-status')).toContainText(
+            'El oponente rechazó la revancha.',
+        );
+        await expect(page1.locator('#rematch-btn')).toBeEnabled();
+
+        // The lobby row loses its pending-rematch controls
+        await expect(page2.locator('#my-games-list .accept-rematch-btn')).toHaveCount(0);
+        await expect(page2.locator('#my-games-list .reject-rematch-btn')).toHaveCount(0);
+
+        await context1.close();
+        await context2.close();
+    });
 });

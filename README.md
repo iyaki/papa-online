@@ -62,7 +62,7 @@ npm test
 npm test -- --coverage
 ```
 
-**Current coverage**: 14 tests (7 unit + 7 integration) ✅
+**Current coverage**: 15 tests (7 unit + 8 integration) ✅
 
 ## 🐳 Docker Deployment
 
