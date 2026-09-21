@@ -9,14 +9,24 @@ updates:
  - package-ecosystem: "devcontainers"
    directory: "/"
    schedule:
-     interval: weekly
+     interval: monthly
+
+ - package-ecosystem: "docker"
+   directory: "/"
+   schedule:
+     interval: monthly
+
+ - package-ecosystem: "docker-compose"
+   directory: "/"
+   schedule:
+     interval: monthly
 
  - package-ecosystem: "npm"
    directory: "/"
    schedule:
-     interval: weekly
+     interval: monthly
 
  - package-ecosystem: "npm"
    directory: "/server"
    schedule:
-     interval: weekly
+     interval: monthly
