@@ -1,5 +1,5 @@
 # Build stage
-FROM node:20-alpine AS builder
+FROM node:26-alpine AS builder
 
 WORKDIR /app
 
@@ -11,7 +11,7 @@ COPY package*.json ./
 RUN cd server && npm ci --only=production
 
 # Production stage
-FROM node:20-alpine
+FROM node:26-alpine
 
 LABEL org.opencontainers.image.source=https://github.com/iyaki/papa-online
 
