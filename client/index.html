@@ -132,9 +132,9 @@
             </div>
         </div>
 
-        <!-- Credits Footer (outside lobby card) -->
-        <div
-            style="position: fixed; bottom: 10px; left: 0; right: 0; text-align: center; font-size: 0.9rem; color: var(--text-color); opacity: 0.7;">
+        <!-- Credits Footer (re-parented into the active screen by main.js) -->
+        <div id="credits-footer"
+            style="text-align: center; font-size: 0.9rem; color: var(--text-color); opacity: 0.7; margin-top: 10px;">
             Hecho con 🧉 por <a href="https://iyaki.ar/" target="_blank" rel="noopener noreferrer"
                 style="color: var(--text-color); text-decoration: underline;">iyaki</a> - Idea original: Lucas Pacheco
         </div>
@@ -195,8 +195,8 @@
 
             <!-- First-game tutorial overlay -->
             <div id="tutorial-overlay" class="screen hidden"
-                style="background: var(--bg-color); z-index: 50; position: fixed; top: 0; left: 0; width: 100%; height: 100%;">
-                <div class="card" style="max-width: 500px; width: 95%; max-height: 90vh; overflow-y: auto;">
+                style="z-index: 50; position: fixed; top: 0; left: 0; width: 100%; height: 100%;">
+                <div class="card" style="max-width: 500px; width: 95%;">
                     <h2>¿Cómo se juega?</h2>
                     <div style="text-align: left; line-height: 1.6;">
                         <p>1️⃣ <strong>Presioná sobre el último número conectado y arrastrá</strong> hasta el
@@ -237,7 +237,7 @@
 
         <!-- Stats Screen -->
         <div id="stats-screen" class="screen hidden">
-            <div class="card" style="max-width: 500px; width: 95%; max-height: 90vh; overflow-y: auto;">
+            <div class="card" style="max-width: 500px; width: 95%;">
                 <h2>Estadísticas</h2>
                 <div style="display: flex; justify-content: space-around; margin-bottom: 20px;">
                     <div style="text-align: center;">
@@ -262,9 +262,8 @@
         </div>
 
         <!-- FAQ Screen -->
-        <div id="faq-screen" class="screen hidden"
-            style="background: var(--bg-color); z-index: 50; position: fixed; top: 0; left: 0; width: 100%; height: 100%;">
-            <div class="card" style="max-width: 500px; width: 95%; max-height: 90vh; overflow-y: auto;">
+        <div id="faq-screen" class="screen hidden">
+            <div class="card" style="max-width: 500px; width: 95%;">
                 <h2>Reglas y Ayuda</h2>
                 <div class="faq-content" style="text-align: left; line-height: 1.6;">
                     <h3>🥔 ¿De qué trata?</h3>

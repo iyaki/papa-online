@@ -9,13 +9,29 @@ const closeFaqBtn = document.getElementById('close-faq-btn');
 
 faqBtn.addEventListener('click', () => {
     console.log('FAQ Button Clicked');
+    lobbyScreen.classList.add('hidden');
     faqScreen.classList.remove('hidden');
 });
 
 closeFaqBtn.addEventListener('click', () => {
     console.log('Close FAQ Button Clicked');
     faqScreen.classList.add('hidden');
+    lobbyScreen.classList.remove('hidden');
 });
+
+// Credits footer sits at the end of the active screen's content instead of
+// floating fixed over everything. One element, re-parented on screen swaps.
+const creditsFooter = document.getElementById('credits-footer');
+function placeCreditsFooter() {
+    const active = document.querySelector('.screen:not(.hidden)');
+    if (active && creditsFooter.parentElement !== active) active.appendChild(creditsFooter);
+}
+new MutationObserver(placeCreditsFooter).observe(document.getElementById('app'), {
+    subtree: true,
+    attributes: true,
+    attributeFilter: ['class'],
+});
+placeCreditsFooter();
 
 // First-game tutorial overlay
 const TUTORIAL_SEEN_KEY = 'has_seen_tutorial';
