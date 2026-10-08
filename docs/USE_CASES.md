@@ -15,7 +15,10 @@ On-screen labels are quoted verbatim in Spanish, as the UI is Spanish.
 
 **Actor**: player who wants to start a game.
 
-1. Open the app. The lobby is shown.
+1. Open the app. The lobby is shown — it states the game is a two-player
+   duel, and the primary path is labelled **▶ Empezar partida** (the
+   alternative path, **👥 ¿Te compartieron un código? Unite**, is for
+   joiners).
 2. Type your name into the "Tu Nombre" field (max 10 characters; it is saved
    in the browser for future visits).
 3. (Optional) Pick the number of points in the selector: 10, 15, 20
@@ -172,8 +175,10 @@ the room.
 **Actor**: any player, from the lobby.
 
 1. Press **❓ Ayuda / Reglas**.
-2. The screen shows the game goal, how to play, who wins, room lifetime
-   (3 days) and the bug-report email.
+2. The screen shows the game goal (turn-based play, solo start before the
+   rival joins), how to play (drag interaction, auto-complete, safe retry),
+   when you lose (crossed line or wrong number) with a diagram, who wins, how
+   to invite someone, room lifetime (3 days) and the bug-report email.
 3. Press **Entendido** to go back to the lobby.
 
 ## UC-12: Enable notifications
@@ -194,6 +199,24 @@ the room.
 1. Press **📸 Guardar Recuerdo**.
 2. Result: a PNG (`juego-papa-YYYY-MM-DD.png`) downloads with the final
    board, the players' names, the result and the game URL.
+
+## UC-14: See the first-game tutorial
+
+**Actor**: a first-time player (browser without the tutorial flag).
+
+1. Enter a game screen for the first time (create a room or join one): an
+   overlay appears over the board with the rules bullets (drag interaction,
+   two-player format, auto-complete, safe retry, losing rules, win
+   condition).
+2. Press **¡Entendido!**: the overlay closes and the flag is stored in the
+   browser.
+3. If the room still has one player (first-game creator), an invite hint
+   appears under the status bar: "la sala es para 2 — invitá a tu rival con
+   el código o el link (Compartir)". It disappears the moment the rival
+   joins.
+4. Result: the overlay is never shown again on that browser — creating or
+   joining any later game goes straight to the board (a new browser or
+   cleared storage shows it once more).
 
 ---
 

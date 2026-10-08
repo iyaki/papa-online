@@ -35,8 +35,12 @@
         <!-- Lobby Screen -->
         <div id="lobby-screen" class="screen">
             <h1>Juego de la Papa</h1>
+            <p style="font-size: 0.95rem; color: var(--text-color); opacity: 0.8; margin: 5px 0 15px;">
+                Duelo para 2 jugadores: conectá los números en orden sin cruzar líneas. El último que logre
+                mover, gana.</p>
             <div class="lobby-controls">
                 <input type="text" id="username-input" placeholder="Tu Nombre" maxlength="10">
+                <p style="font-weight: bold; text-align: left; margin: 0 0 8px;">▶ Empezar partida</p>
                 <div class="create-room-group">
                     <select id="point-count-select" class="sketchy-input" title="Cantidad de puntos">
                         <option value="10">10 pts</option>
@@ -47,6 +51,7 @@
                     </select>
 <button type="button" id="create-room-btn" class="primary-btn">Crear Sala</button>
                 </div>
+                <p style="font-weight: bold; text-align: left; margin: 12px 0 8px;">👥 ¿Te compartieron un código? Unite</p>
                 <div class="join-room-group">
                     <input type="text" id="room-code-input" placeholder="Código" maxlength="6" class="sketchy-input">
 <button type="button" id="join-room-btn" class="primary-btn">Unirse</button>
@@ -122,8 +127,34 @@
                 </div>
 
             </div>
+
+            <div id="invite-hint" class="hidden"
+                style="margin: 0 10px 10px; padding: 10px 15px; border: 2px dashed var(--text-color); border-radius: 10px; font-size: 0.95rem; text-align: center;">
+                👥 La sala es para 2: invitá a tu rival tocando el ícono <strong>Compartir</strong> (arriba)
+                para pasarle el código o el link.
+            </div>
             <div class="canvas-container">
                 <canvas id="game-canvas"></canvas>
+            </div>
+
+            <!-- First-game tutorial overlay -->
+            <div id="tutorial-overlay" class="screen hidden"
+                style="background: var(--bg-color); z-index: 50; position: fixed; top: 0; left: 0; width: 100%; height: 100%;">
+                <div class="card" style="max-width: 500px; width: 95%; max-height: 90vh; overflow-y: auto;">
+                    <h2>¿Cómo se juega?</h2>
+                    <div style="text-align: left; line-height: 1.6;">
+                        <p>1️⃣ <strong>Presioná sobre el último número conectado y arrastrá</strong> hasta el
+                            que indica "Siguiente".</p>
+                        <p>👥 La sala es para 2: invitá a tu rival con el código o el link.</p>
+                        <p>⚡ Al llegar al número, la línea se completa sola.</p>
+                        <p>↩️ Si soltás antes de llegar, no pasa nada: reintentá sin perder el turno.</p>
+                        <p>⛔ Perdés la partida si cruzás una línea (tuya o del rival) o tocás un número
+                            que no es el siguiente.</p>
+                        <p>🏆 Gana el último que haga una jugada válida.</p>
+                    </div>
+                    <button type="button" id="tutorial-dismiss-btn" class="primary-btn"
+                        style="margin-top: 20px; margin-bottom: 20px; width: 95%;">¡Entendido!</button>
+                </div>
             </div>
         </div>
 
@@ -181,16 +212,46 @@
                 <h2>Reglas y Ayuda</h2>
                 <div class="faq-content" style="text-align: left; line-height: 1.6;">
                     <h3>🥔 ¿De qué trata?</h3>
-                    <p>El objetivo es conectar los números en orden (1, 2, 3...) sin que las líneas se crucen.</p>
+                    <p>El objetivo es conectar los números en orden (1, 2, 3...) sin que las líneas se crucen.
+                        Se juega por turnos: los jugadores alternan jugadas, y el creador de la sala puede
+                        empezar antes de que su rival se una.</p>
 
                     <h3>🎮 ¿Cómo jugar?</h3>
-                    <p>1. Busca el número que sigue (empieza por el 1).</p>
-                    <p>2. Arrastra desde el último número conectado hasta el nuevo.</p>
-                    <p>3. ¡Cuidado! Si tocas tu propia línea o la del oponente, pierdes.</p>
-                    <p>4. Si te quedas sin camino posible, también pierdes.</p>
+                    <p>1. Presioná sobre el último número conectado y arrastrá hasta el que indica "Siguiente".</p>
+                    <p>2. Al llegar al número, la línea se completa sola.</p>
+                    <p>3. Si soltás antes de llegar, podés reintentar: no perdés el turno.</p>
+
+                    <h3>⛔ ¿Cuándo se pierde?</h3>
+                    <p>Si cruzás una línea ya dibujada (tuya o del rival) o tocás un número que no es el
+                        siguiente, perdés la partida al instante y el rival es notificado.</p>
+
+                    <svg id="faq-diagram" viewBox="0 0 400 160" style="width: 100%; height: auto;" role="img"
+                        aria-label="Diagrama: una línea válida conecta 1, 2 y 3; una línea que la cruza pierde">
+                        <path d="M 50 110 Q 120 70 200 50 Q 280 72 350 110" fill="none" stroke="#4caf50"
+                            stroke-width="3" stroke-linecap="round"></path>
+                        <path d="M 345 140 L 30 60" fill="none" stroke="#f44336" stroke-width="3"
+                            stroke-linecap="round"></path>
+                        <text x="290" y="62" fill="#4caf50" font-size="24" text-anchor="middle">✓</text>
+                        <text x="103" y="66" fill="#f44336" font-size="26" text-anchor="middle">✗</text>
+                        <g stroke="var(--text-color)" stroke-width="2" fill="var(--bg-color)">
+                            <circle cx="50" cy="110" r="22"></circle>
+                            <circle cx="200" cy="50" r="22"></circle>
+                            <circle cx="350" cy="110" r="22"></circle>
+                        </g>
+                        <g fill="var(--text-color)" font-size="24" text-anchor="middle" dominant-baseline="central">
+                            <text x="50" y="112">1</text>
+                            <text x="200" y="52">2</text>
+                            <text x="350" y="112">3</text>
+                        </g>
+                    </svg>
 
                     <h3>🏆 ¿Quién gana?</h3>
-                    <p>Gana el último jugador que logre hacer un movimiento válido.</p>
+                    <p>El último jugador que haga una jugada válida. Si se conectan todos los números, gana
+                        quien hizo la última jugada.</p>
+
+                    <h3>🤝 ¿Cómo juego con alguien?</h3>
+                    <p>Creá la sala y compartí el código o el link con la otra persona (ícono de compartir en
+                        la partida). La sala admite 2 jugadores.</p>
 
                     <h3>🐛 ¿Encontraste un error?</h3>
                     <p>Si encuentras algún problema o error en el juego, por favor repórtalo a: <a

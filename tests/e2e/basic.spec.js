@@ -1,10 +1,11 @@
 const { test, expect } = require('@playwright/test');
+const { createPlayerContext } = require('./utils');
 
 test.describe('Multiplayer Game Flow', () => {
     test('Player 1 creates room and Player 2 joins', async ({ browser }) => {
         // Create two isolated browser contexts (like two different users)
-        const context1 = await browser.newContext();
-        const context2 = await browser.newContext();
+        const context1 = await createPlayerContext(browser);
+        const context2 = await createPlayerContext(browser);
 
         const page1 = await context1.newPage();
         const page2 = await context2.newPage();
