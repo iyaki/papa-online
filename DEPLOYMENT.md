@@ -276,6 +276,40 @@ You can configure GitHub Actions for automatic deployment:
 1. Add secrets in GitHub (SSH keys, VPS IP)
 2. Create a workflow that pulls and rebuilds on every push to main
 
+## 🔔 Web Push Notifications (optional)
+
+Turn/rival/rematch pings work without any setup while the tab is open (local
+notifications). Server-side Web Push — for players with the tab closed — is
+enabled only when VAPID keys are present; without them the server starts
+normally with push disabled.
+
+1. Generate a key pair once:
+
+   ```bash
+   npx web-push generate-vapid-keys
+   ```
+
+2. Pass both values at runtime (never bake them into the image):
+
+   ```bash
+   docker run -e VAPID_PUBLIC_KEY=... -e VAPID_PRIVATE_KEY=... ...
+   # or in docker-compose.yml:
+   #   environment:
+   #     - VAPID_PUBLIC_KEY=...
+   #     - VAPID_PRIVATE_KEY=...
+   ```
+
+3. With keys set, `GET /api/push/config` returns the public key and clients
+   subscribe on their next visit. Rotating keys requires clients to
+   re-subscribe (they re-subscribe silently on every page load).
+
+Platform notes:
+
+- iOS/iPadOS only delivers Web Push to a PWA installed on the home screen,
+  over HTTPS. This is a platform requirement.
+- Subscriptions live in memory (like game rooms): a server restart clears
+  them, and clients re-subscribe on their next load.
+
 ## 📝 Environment Variables
 
 If you need to configure custom variables, create a `.env` file in the root directory:

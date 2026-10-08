@@ -41,6 +41,7 @@ Open Questions / Risks section):
 - [`player-onboarding.md`](./player-onboarding.md) — one-time first-game tutorial overlay, invite hint until the rival joins, expanded help screen with diagram, labelled two-player lobby
 - [`app-versioning.md`](./app-versioning.md) — deploy version identity (git SHA via Docker build args), `GET /api/version`, server-rendered lobby version line, versioned asset URLs `/v/<version>/…` for cache correctness behind Cloudflare
 - [`seo-aeo-discoverability.md`](./seo-aeo-discoverability.md) — meta description, canonical, WebApplication + FAQPage JSON-LD, robots.txt and sitemap.xml for search/answer-engine discoverability
+- [`pwa-push-notifications.md`](./pwa-push-notifications.md) — installable PWA (manifest + icons), SW-based notifications, optional Web Push with VAPID for absent players
 
 When a new spec is complete, add it to this list (the `spec-creator` skill
 requires this too).

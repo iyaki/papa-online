@@ -158,21 +158,27 @@ joinRoomBtn.addEventListener('mousedown', () => {
 // Notification Logic
 const enableNotificationsBtn = document.getElementById('enable-notifications-btn');
 
+// Resolves to the registration, or null when SW is unsupported/broken.
+const swReady =
+    'serviceWorker' in navigator
+        ? navigator.serviceWorker.register('/sw.js').catch(() => null)
+        : null;
+
 function updateNotificationButton() {
-    if (!('Notification' in window)) {
+    // Only offer the prompt while the browser can still ask ('default'):
+    // with 'denied' it would never re-prompt, with 'granted' there's nothing to do.
+    if (!('Notification' in window) || Notification.permission !== 'default') {
         enableNotificationsBtn.classList.add('hidden');
         return;
     }
-
-    if (Notification.permission === 'default' || Notification.permission === 'denied') {
-        enableNotificationsBtn.classList.remove('hidden');
-    } else {
-        enableNotificationsBtn.classList.add('hidden');
-    }
+    enableNotificationsBtn.classList.remove('hidden');
 }
 
 enableNotificationsBtn.addEventListener('click', () => {
     Notification.requestPermission().then((permission) => {
+        if (permission === 'granted') {
+            enablePush().catch(console.error);
+        }
         updateNotificationButton();
     });
 });
@@ -180,31 +186,59 @@ enableNotificationsBtn.addEventListener('click', () => {
 // Check initially
 updateNotificationButton();
 
+// Silent re-subscription on load: covers endpoint rotation without needing a
+// pushsubscriptionchange handler.
+if ('Notification' in window && Notification.permission === 'granted') {
+    enablePush().catch(console.error);
+}
+
 // Helper to check if page is visible
 function isPageVisible() {
     return !document.hidden;
 }
 
-// Helper to send notification
-function sendNotification(title, body) {
-    if ('Notification' in window && Notification.permission === 'granted' && !isPageVisible()) {
-        const notification = new Notification(title, {
-            body: body,
-            icon: '/favicon.ico',
-            badge: '/favicon.ico',
-            tag: 'turn-notification',
-            requireInteraction: false,
-        });
-
-        // Auto-close after 5 seconds
-        setTimeout(() => notification.close(), 5000);
-
-        // Focus window when notification is clicked
-        notification.onclick = () => {
-            window.focus();
-            notification.close();
-        };
+// Helper to send notification through the service worker: `new Notification()`
+// is not supported on Android Chrome; SW notifications persist until tapped
+// (desired for turn pings, so the old 5s auto-close is gone).
+async function sendNotification(title, body, roomCode = null) {
+    if (!('Notification' in window) || Notification.permission !== 'granted' || isPageVisible()) {
+        return;
     }
+    const registration = await swReady;
+    if (!registration) return;
+    await registration.showNotification(title, {
+        body,
+        icon: '/icon-192.png',
+        badge: '/icon-192.png',
+        tag: roomCode || 'papa-online',
+        data: { url: roomCode ? `/?room=${roomCode}` : '/' },
+    });
+}
+
+function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const raw = atob(base64);
+    return Uint8Array.from([...raw].map((c) => c.charCodeAt(0)));
+}
+
+// Web Push subscription: server-side pings for when the tab is closed.
+// Without VAPID keys on the server (/api/push/config returns null publicKey)
+// only local notifications remain.
+async function enablePush() {
+    if (!swReady) return;
+    const { publicKey } = await (await fetch('/api/push/config')).json();
+    if (!publicKey) return;
+    const registration = await swReady;
+    const subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(publicKey),
+    });
+    await fetch('/api/push/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: sessionToken, subscription }),
+    });
 }
 
 // Confetti animation for winners
@@ -288,6 +322,8 @@ socket.on('player_joined', ({ username }) => {
         game.opponentName = username;
         console.log('Opponent name set to:', game.opponentName);
     }
+
+    sendNotification('¡Tu rival se unió!', `${username} ya está en la sala.`, game?.roomCode);
 });
 
 socket.on('game_start', ({ numbers, currentTurn }) => {
@@ -305,6 +341,7 @@ socket.on('move_made', ({ line, nextNumber, currentTurn }) => {
         sendNotification(
             'Papa Online - ¡Es tu turno!',
             `${opponentName} hizo su jugada. Ahora te toca a ti.`,
+            game.roomCode,
         );
     }
 });
@@ -419,6 +456,11 @@ socket.on('game_over', ({ reason, loser, winner }) => {
         const isWin = winner === sessionToken;
         const opponentName = game.opponentName || 'Oponente';
         updateStats(opponentName, isWin, game.roomCode);
+        sendNotification(
+            'Partida terminada',
+            isWin ? '¡Ganaste! 🏆' : 'Perdiste esta vez 🥔',
+            game.roomCode,
+        );
     }
 });
 
@@ -466,6 +508,12 @@ socket.on('rematch_requested', () => {
     statusText.classList.add('hidden');
 
     if (game) game.rematchRequestedBy = 'opponent'; // Mark as active
+
+    sendNotification(
+        '¡Revancha pedida!',
+        `${game?.opponentName || 'Tu rival'} quiere la revancha.`,
+        game?.roomCode,
+    );
 });
 
 socket.on('rematch_rejected', () => {
@@ -505,6 +553,8 @@ socket.on('game_restarted', ({ roomCode, numbers, currentTurn }) => {
         game.rematchRequestedBy = null;
         game.startGame(numbers, currentTurn);
     }
+
+    sendNotification('¡Revancha aceptada!', 'La partida vuelve a empezar.', game?.roomCode);
 });
 
 // UI Events

@@ -1,0 +1,15 @@
+{
+    "name": "Juego de la Papa",
+    "short_name": "La Papa",
+    "description": "Duelo online gratis para 2 jugadores: conectá los números en orden sin cruzar líneas. El último que logre mover, gana.",
+    "lang": "es",
+    "start_url": "/",
+    "scope": "/",
+    "display": "standalone",
+    "background_color": "#fdfbf7",
+    "theme_color": "#fdfbf7",
+    "icons": [
+        { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+        { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+    ]
+}

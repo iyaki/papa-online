@@ -3,6 +3,7 @@ const http = require('node:http');
 const { Server } = require('socket.io');
 const path = require('node:path');
 const fs = require('node:fs');
+const webpush = require('web-push');
 
 const app = express();
 const server = http.createServer(app);
@@ -15,12 +16,48 @@ const io = new Server(server, {
 
 const CLIENT_DIR = path.join(__dirname, '../client');
 
+// Optional Web Push: without VAPID keys the server runs with push disabled.
+function getPushConfig(env = process.env) {
+    return {
+        publicKey: env.VAPID_PUBLIC_KEY || null,
+        privateKey: env.VAPID_PRIVATE_KEY || null,
+    };
+}
+const pushConfig = getPushConfig();
+const pushEnabled = Boolean(pushConfig.publicKey && pushConfig.privateKey);
+if (pushEnabled) {
+    webpush.setVapidDetails('https://juego-papa.com', pushConfig.publicKey, pushConfig.privateKey);
+}
+
+app.use(express.json());
+
 function getVersionInfo(env = process.env) {
     return { version: env.APP_VERSION || 'dev', builtAt: env.APP_BUILT_AT || null };
 }
 
 app.get('/api/version', (_req, res) => {
     res.json(getVersionInfo());
+});
+
+app.get('/api/push/config', (_req, res) => {
+    res.json({ publicKey: pushConfig.publicKey });
+});
+
+app.post('/api/push/subscribe', (req, res) => {
+    const { token, subscription } = req.body || {};
+    if (
+        typeof token !== 'string' ||
+        !token ||
+        typeof subscription !== 'object' ||
+        subscription === null ||
+        typeof subscription.endpoint !== 'string'
+    ) {
+        return res.status(400).json({ error: 'Invalid subscription' });
+    }
+    // Upsert; same shell-session pattern join_room uses.
+    if (!playerSessions[token]) playerSessions[token] = { username: '', rooms: [] };
+    playerSessions[token].pushSubscription = subscription;
+    res.status(204).end();
 });
 
 app.get('/', (_req, res) => {
@@ -99,6 +136,17 @@ function checkOverlap(pos, numbers) {
 // Store mapping of Token -> { roomCode, username }
 // In a real app, this would be in a DB/Redis.
 const playerSessions = {};
+
+// Web Push only reaches players with no live socket: a connected tab shows
+// its own local notifications, so a push would be a duplicate.
+function notifyPlayerIfAbsent(player, payload) {
+    if (io.sockets.sockets.has(player.id)) return;
+    const session = playerSessions[player.token];
+    if (!pushEnabled || !session || !session.pushSubscription) return;
+    webpush.sendNotification(session.pushSubscription, JSON.stringify(payload)).catch((err) => {
+        if (err.statusCode === 404 || err.statusCode === 410) delete session.pushSubscription;
+    });
+}
 
 function scheduleCleanup(roomCode) {
     if (!rooms[roomCode]) return; // Already deleted
@@ -282,6 +330,15 @@ io.on('connection', (socket) => {
                 socket.emit('room_joined', { roomCode, token });
                 io.to(roomCode).emit('player_joined', { username });
 
+                notifyPlayerIfAbsent(
+                    room.players.find((p) => p.id !== socket.id),
+                    {
+                        title: '¡Tu rival se unió!',
+                        body: `${username} ya está en la sala ${roomCode}.`,
+                        url: `/?room=${roomCode}`,
+                    },
+                );
+
                 console.log(`${username} joined room ${roomCode}`);
 
                 // Send current game state to joining player (game already started when room was created)
@@ -352,6 +409,13 @@ io.on('connection', (socket) => {
             if (room.players.length === 2) {
                 const nextPlayer = room.players.find((p) => p.id !== socket.id);
                 room.currentTurn = nextPlayer ? nextPlayer.id : socket.id;
+
+                const mover = room.players.find((p) => p.id === socket.id);
+                notifyPlayerIfAbsent(nextPlayer, {
+                    title: '🥔 ¡Es tu turno!',
+                    body: `${mover.username} movió. ¡Te toca!`,
+                    url: `/?room=${roomCode}`,
+                });
             } else {
                 // Set turn to null (waiting for opponent) after creator's first move
                 room.currentTurn = null;
@@ -401,6 +465,12 @@ io.on('connection', (socket) => {
 
             io.to(roomCode).emit('game_over', { reason, loser: room.loser, winner: room.winner });
 
+            notifyPlayerIfAbsent(winnerPlayer, {
+                title: 'Partida terminada',
+                body: '¡Ganaste! 🏆',
+                url: `/?room=${roomCode}`,
+            });
+
             // Notify for list update
             room.players.forEach((p) => {
                 io.to(p.id).emit('my_games_update');
@@ -449,6 +519,12 @@ io.on('connection', (socket) => {
             const opponent = room.players.find((p) => p.id !== socket.id);
             if (opponent) {
                 io.to(opponent.id).emit('rematch_requested');
+                const requester = room.players.find((p) => p.id === socket.id);
+                notifyPlayerIfAbsent(opponent, {
+                    title: '¡Revancha pedida!',
+                    body: `${requester.username} quiere la revancha.`,
+                    url: `/?room=${roomCode}`,
+                });
             }
 
             // Update lists for both (to show status in lobby)
@@ -486,6 +562,13 @@ io.on('connection', (socket) => {
                     roomCode,
                     numbers: room.numbers,
                     currentTurn: room.currentTurn,
+                });
+
+                // Opponent here is the player who requested the rematch
+                notifyPlayerIfAbsent(opponent, {
+                    title: '¡Revancha aceptada!',
+                    body: 'La partida vuelve a empezar.',
+                    url: `/?room=${roomCode}`,
                 });
 
                 // Update lists for both (to clear status in lobby)
@@ -526,7 +609,9 @@ module.exports = {
     server,
     io,
     rooms,
+    playerSessions,
     generateNumbers,
     checkOverlap,
     getVersionInfo,
+    getPushConfig,
 };
