@@ -35,15 +35,14 @@ body {
 
 .screen {
     width: 100%;
-    /* biome-ignore lint/suspicious/noDuplicateProperties: progressive viewport-height fallbacks */
-    height: 95vh;
+    height: 100vh;
     /* biome-ignore lint/suspicious/noDuplicateProperties: dvh with vh fallback for older browsers */
-    height: 98dvh;
+    height: 100dvh;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    /* Top alignment for mobile */
+    justify-content: safe center;
     padding: 10px;
     position: relative;
     overflow-y: auto;
@@ -52,6 +51,24 @@ body {
 
 .hidden {
     display: none !important;
+}
+
+/* #app is a shrink-wrapped flex item: without this, screens are only as wide
+   as their content and their scrollbar hugs that column instead of the
+   window's right edge */
+#app {
+    width: 100%;
+}
+
+/* Paper sheet frame for secondary screens (tutorial, stats, FAQ) */
+.card {
+    background: white;
+    padding: 2rem;
+    border: 3px solid var(--text-color);
+    border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+    /* Sketchy border */
+    text-align: center;
+    box-shadow: 10px 10px 0px rgba(0, 0, 0, 0.1);
 }
 
 /* Lobby Styles */
@@ -433,23 +450,6 @@ button:active {
     /* Prevent scrolling while drawing */
 }
 
-#stats-screen {
-    background: rgba(255, 255, 255, 0.95);
-    padding: 30px 20px;
-    border: 3px solid var(--text-color);
-    border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
-    box-shadow: 10px 10px 0px rgba(0, 0, 0, 0.15);
-    position: absolute;
-    top: 60px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: calc(100% - 40px);
-    max-width: 800px;
-    margin: 0;
-    overflow-y: auto;
-    max-height: calc(100vh - 70px);
-}
-
 #stats-screen h2 {
     text-align: center;
     margin-bottom: 20px;
@@ -498,6 +498,16 @@ button:active {
     margin-bottom: 10px;
     font-size: 1rem;
     color: #555;
+}
+
+/* Fixed overlays must repaint the paper grid: a flat background hides the
+   body's grid lines and breaks the page's look */
+#tutorial-overlay {
+    background-color: var(--bg-color);
+    background-image:
+        linear-gradient(var(--line-color) 1px, transparent 1px),
+        linear-gradient(90deg, var(--line-color) 1px, transparent 1px);
+    background-size: 20px 20px;
 }
 
 .stats-item:last-child {
