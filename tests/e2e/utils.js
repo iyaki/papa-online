@@ -1,5 +1,15 @@
 // Shared E2E utilities
 
+/**
+ * Creates a browser context pre-flagged as having seen the tutorial,
+ * so gameplay specs never hit the #tutorial-overlay.
+ */
+async function createPlayerContext(browser) {
+    const context = await browser.newContext();
+    await context.addInitScript(() => localStorage.setItem('has_seen_tutorial', 'true'));
+    return context;
+}
+
 async function makeMove(page, fromValue, toValue) {
     // Wait for numbers to be defined and populated
     await page.waitForFunction(
@@ -48,8 +58,8 @@ async function makeMove(page, fromValue, toValue) {
  * Returns { roomCode, page1, page2, context1, context2 }
  */
 async function setupGame(browser) {
-    const context1 = await browser.newContext();
-    const context2 = await browser.newContext();
+    const context1 = await createPlayerContext(browser);
+    const context2 = await createPlayerContext(browser);
     const page1 = await context1.newPage();
     const page2 = await context2.newPage();
 
@@ -75,4 +85,4 @@ async function setupGame(browser) {
     return { roomCode, page1, page2, context1, context2 };
 }
 
-module.exports = { makeMove, setupGame };
+module.exports = { makeMove, setupGame, createPlayerContext };

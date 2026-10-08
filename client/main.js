@@ -17,6 +17,28 @@ closeFaqBtn.addEventListener('click', () => {
     faqScreen.classList.add('hidden');
 });
 
+// First-game tutorial overlay
+const TUTORIAL_SEEN_KEY = 'has_seen_tutorial';
+const inviteHint = document.getElementById('invite-hint');
+let tutorialShownThisEntry = false;
+let roomPlayerCount = 0;
+
+function maybeShowTutorial() {
+    tutorialShownThisEntry = !localStorage.getItem(TUTORIAL_SEEN_KEY);
+    if (tutorialShownThisEntry) {
+        document.getElementById('tutorial-overlay').classList.remove('hidden');
+    }
+}
+document.getElementById('tutorial-dismiss-btn').addEventListener('click', () => {
+    localStorage.setItem(TUTORIAL_SEEN_KEY, 'true');
+    document.getElementById('tutorial-overlay').classList.add('hidden');
+    // First-game creator still waiting for the rival: point at the share flow
+    if (tutorialShownThisEntry && roomPlayerCount < 2) {
+        inviteHint.classList.remove('hidden');
+    }
+    tutorialShownThisEntry = false;
+});
+
 // DOM Elements
 const lobbyScreen = document.getElementById('lobby-screen');
 const gameScreen = document.getElementById('game-screen');
@@ -242,6 +264,8 @@ socket.on('room_joined', ({ roomCode }) => {
 
 socket.on('player_joined', ({ username }) => {
     console.log('Player joined:', username);
+    roomPlayerCount = Math.max(roomPlayerCount, 2);
+    inviteHint.classList.add('hidden');
 
     // Store opponent name for stats (the joining player is the opponent for room creator)
     if (game && username && username !== usernameInput.value.trim()) {
@@ -289,7 +313,10 @@ socket.on(
         // Restore UI
         lobbyScreen.classList.add('hidden');
         gameScreen.classList.remove('hidden');
+        maybeShowTutorial();
         roomCodeDisplay.innerText = roomCode;
+        roomPlayerCount = players ? players.length : roomPlayerCount;
+        if (roomPlayerCount >= 2) inviteHint.classList.add('hidden');
 
         const canvas = document.getElementById('game-canvas');
         const username = usernameInput.value.trim();
@@ -726,12 +753,15 @@ backToMenuBtn.addEventListener('click', () => {
 
     game = null; // Clear current game instance to avoid conflicts? Or keep it?
     // Better to clear it or pause it.
+    inviteHint.classList.add('hidden');
+    roomPlayerCount = 0;
     socket.emit('get_my_games'); // Refresh list
 });
 
 function enterGame(roomCode, opponentName = null) {
     lobbyScreen.classList.add('hidden');
     gameScreen.classList.remove('hidden');
+    maybeShowTutorial();
     roomCodeDisplay.innerText = roomCode;
 
     const canvas = document.getElementById('game-canvas');
