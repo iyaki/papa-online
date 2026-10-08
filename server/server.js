@@ -30,6 +30,25 @@ app.get('/', (_req, res) => {
     res.set('Cache-Control', 'no-cache').type('html').send(html);
 });
 
+app.get('/sitemap.xml', (_req, res) => {
+    // lastmod from index.html mtime: Docker COPY preserves it, so it reflects
+    // the real last content change instead of a hardcoded date that rots.
+    const lastmod = fs
+        .statSync(path.join(CLIENT_DIR, 'index.html'))
+        .mtime.toISOString()
+        .slice(0, 10);
+    res.set('Cache-Control', 'no-cache')
+        .type('application/xml')
+        .send(`<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+        <loc>https://juego-papa.com/</loc>
+        <lastmod>${lastmod}</lastmod>
+    </url>
+</urlset>
+`);
+});
+
 app.use(
     '/v/:version',
     express.static(CLIENT_DIR, {
